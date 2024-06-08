@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html>
+  <!--
+      Modal dialog stuff stolen from: 
+      labris at https://babylonpress.org/resources/utilities/click-on-3d-model-opens-modal-window-with-specific-wordpress-post/
+      Modified with the help of ChatGPT 3.5.
+    -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Cyber 170-865 Room</title>
+
+    <!-- Babylon.js -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+
+    <style>
+      html, body {
+          overflow: hidden;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+      }
+
+      #renderCanvas {
+          width: 100%;
+          height: 100%;
+          touch-action: none;
+      }
+            
+      #canvasZone {
+          width: 100%;
+          height: 100%;
+      }
+
+      #loadingScreen {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          color: white;
+          font-size: 50px;
+          text-align: center;
+          background-color: #BB464Bcc;
+          z-index: 99999;
+      }
+
+      .modal {
+          position: fixed;
+          left: 0;
+          top: 0;
+          max-width: 600px;
+          max-height: 80%;
+          overflow-y: auto;
+          background-color: rgba(0, 0, 0, 0.5);
+          opacity: 0;
+          visibility: hidden;
+          transform: scaleX(1.1) scaleY(1.1);
+          transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+          font-family: sans-serif;
+      }
+
+      .modal-content {
+          background-color: white;
+          padding: 1rem 1.5rem;
+          z-index: 99000 !important;
+      }
+
+      .close-button {
+          float: right;
+          width: 1.5rem;
+          line-height: 1.5rem;
+          text-align: center;
+          cursor: pointer;
+          border-radius: 0.25rem;
+          background-color: lightgray;
+      }
+
+      .close-button:hover {
+          background-color: darkgray;
+      }
+
+      .show-modal {
+          opacity: 1;
+          visibility: visible;
+          transform: scaleX(1.0) scaleY(1.0);
+          transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+      }
+
+      @media only screen and (max-width: 50rem) {
+          h1 {
+              font-size: 1.5rem;
+          }
+
+          .modal-content {
+              width: calc(100% - 5rem);
+          }
+      }
+    </style>
+  </head>
+  
+  <body>
+      
+    <div class="modal">
+      <div class="modal-content">
+        <span class="close-button">×</span>
+        <div id="modal-iframe">
+          <p>Modal Dummy Text programmatically replaced by dialog message</p>
+        </div>
+      </div>
+    </div>
+      
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+
+    <script>
+      // Handle a modal pop-up dialog with components defined by the CSS and HTML above.
+      
+      var modal = document.querySelector(".modal");
+      var closeButton = document.querySelector(".close-button");
+
+      function toggleModal() {
+          console.log("in toggleModal()");
+          modal.classList.toggle("show-modal");
+      }
+
+      function windowOnClick(event) {
+          if (event.target === modal) {
+              toggleModal();
+          }
+      }
+
+      closeButton.addEventListener("click", toggleModal);
+      window.addEventListener("click", windowOnClick);
+    </script>
+  
+    <script>
+      // Main Babylon.js code.
+
+      // Global variables.
+      var engine = null;
+      var scene = null;
+      var sceneToRender = null;
+      var use_audio = false;
+      var use_ana_camera = false;
+      var playing_sound = null;
+      var playing_ambient = false;
+
+      BABYLON.Scene.DoubleClickDelay = 500; // ms
+
+      // Website location.
+      const webSiteRoot = "https://nickglazzard1959.github.io/cyber170-865-room";
+
+      // Locate the canvas element of the page.
+      var canvas = document.getElementById("renderCanvas");
+
+      // Function to run the render loop.
+      var startRenderLoop = function (engine, canvas) {
+          engine.runRenderLoop(function () {
+              if (sceneToRender && sceneToRender.activeCamera) {
+                  sceneToRender.render();
+              }
+          });
+      }
+
+      // Load a .glb file. Scale all meshes in the file by scale and translate them by (x,y,z).
+      // dialogInfo defines pop-up dialog contents for all meshes in the object when double left clicked.
+      // audioInfo defines audio to play for all meshes in the object when right clicked.
+      function load_glb_file( webSiteRoot, glbFileName, scene, dialogInfo, audioInfo, x, y, z, scale, rotation ){
+          console.log("Loading file: ", glbFileName, " from: ",  webSiteRoot);
+          BABYLON.SceneLoader.ImportMesh("", webSiteRoot, glbFileName, scene, 
+                                         function(newMeshes){
+                                             // newMeshes[0] is __root__
+                                             console.log("... newMeshes[0] ...");
+                                             console.log(newMeshes[0])
+                                             console.log("--------")
+                                             newMeshes[0].scaling = new BABYLON.Vector3(scale, scale, scale);
+                                             newMeshes[0].position.x = x;
+                                             newMeshes[0].position.y = y;
+                                             newMeshes[0].position.z = z;
+                                             newMeshes[0].rotation.x = 0.0;
+                                             newMeshes[0].rotation.y = rotation * 3.1415926 / 180.0;
+                                             newMeshes[0].rotation.z = 0.0;
+                                             for( var mesh of newMeshes ){
+                                                 console.log(mesh.name);
+                                                 mesh.actionManager = new BABYLON.ActionManager(scene);
+                                                 if ((dialogInfo != null) || (audioInfo != null) ){
+                                                     console.log("... registering dialog and/or audio");
+                                                     mesh.actionManager.registerAction(
+                                                         new BABYLON.ExecuteCodeAction(
+                                                             BABYLON.ActionManager.OnDoublePickTrigger,
+                                                             function(evt) {
+                                                                 meshNow = evt.meshUnderPointer;
+                                                                 console.log('Called, name =',meshNow.name);
+                                                                 // This moves the camera target to the selected object center
+                                                                 // and moves the camera 3 meters out from that.
+                                                                 scene.activeCamera.setTarget(meshNow);
+                                                                 scene.activeCamera.radius = 3.0;
+                                                                 if (dialogInfo != null){
+                                                                     if (! use_audio){
+                                                                         toggleModal();
+                                                                         document.getElementById("modal-iframe").innerHTML = dialogInfo;
+                                                                     }
+                                                                 }
+                                                                 if (audioInfo != null){
+                                                                     if (use_audio){
+                                                                         if (playing_sound != null ){
+                                                                             playing_sound.stop();
+                                                                         }
+                                                                         audioInfo.play();
+                                                                         playing_sound = audioInfo;
+                                                                     }
+                                                                 }
+                                                             }
+                                                         )
+                                                     );
+                                                 }
+                                             } // over meshes
+                                         }); // ImportMesh() ends.
+      } // load_glb_file
+
+      // Create the rendering engine.
+      var createDefaultEngine = function () {
+          return new BABYLON.Engine(canvas, true,
+                                    { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false});
+      };
+
+const a_esm_blurb = `
+<h1 style="text-align:center;">ESM Extended Semiconductor Memory</h1>
+<br>
+<ul> 
+  <li> One option for External Extended Memory (EEM). Other is Extended Core Memory (ECM).
+  <li> ESM probably had the model number 7040.
+  <li> This ESM is configured with 16 banks / 2 million words (~15 MB).
+  <li> NOS device name: DP (DE is UEM - Unified Extended Memory - on the 865).
+  <li> Used for job rollout (swapping) and system files needing fast access, and/or for user program memory.
+  <li> Transfer rate: Uncertain, but 7030 ECS sustained 10MW/second (~75MB/sec) to central memory.
+  <li> At least some ESM configurations were cooled by refrigerant (R-22 rather than the R-12 used by the CPU). These
+    needed their own 5 ton condensing units. 
+  <li> Weight: Unknown.
+  <li> Power: Unknown.
+  <li> Cost: Unknown, however 7030-116 2MW ECS cost $1,916,650 (1980) = $7,141,521 (2023)
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> Control Data Pricing Manual. May 1980.
+  <li> Control Data Software and Hardware Product Descriptions. May 1980.
+  <li> E. J. Hines, Pnersonal communication re: refrigeration, October 2023.
+  <li> DtCyber simulator source code
+  <li> Note: Very little information seems to exist on ESM specifically.
+    "Extended Semiconductor Memory (ESM) Hardware Reference Manual" 60455990 would tell us much more,
+    but there may no longer be any copies of it existing.
+</ul>
+
+`;
+const cc545_blurb = `
+<h1 style="text-align:center;">CC545 Display Station (system console)</h1>
+<br>
+<ul> 
+  <li> 21 inch CRT, 512 x 512 addressable positions. 64 characters, 64 lines (small font).
+  <li> Also: 32 characters, 32 lines (medium font) and 16 characters, 16 lines (large font).
+  <li> Capable of vector graphics displays as well as text displays.
+  <li> Two 12 x 8 inch displayable areas can be shown simultaneously, designated "left" and "right".
+  <li> Uses magnetic deflection (the earlier dual tube 6612 used electrostatic deflection).
+  <li> 70 feet maximum distance to "central computer".
+  <li> 50 key keyboard.
+  <li> Weight: 177 kg.
+  <li> Power: 208V 3 phase 400Hz, 3A per phase (1 kVA), 120V 1 phase 2.7A (0.33 kVA).
+  <li> Cost: One supplied with each "central computer" as part number 18002-1.
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> CDC Cyber 170 Computer Systems Models 845 and 855 Site Preparation Manual. 60458210 G, October 1986.
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+</ul>
+
+`;
+const cdcnet_di_blurb = `
+<h1 style="text-align:center;">CDCNET Device Interface Unit</h1>
+<br>
+<ul> 
+  <li> Interfaces various things to a network (primarily Ethernet).
+  <li> NOS device name: ND
+  <li> Highly modular, many configurations possible.
+  <li> Runs complex software (including gateways between between different types of network).
+  <li> Types of network supported include: CDCNET (NOS/VE), NHP (NOS), various IBM products, X.25 and TCP/IP.
+  <li> Based on a 10 MHz Motorola 68000 CPU (32MHz 68030 in later versions).
+  <li> 8 logic board slots with one processor and at least one 1 MByte SECDED RAM card.
+  <li> 8 line interface module (LIM) slots with many connectivity options.
+  <li> Software written in CYBIL (CDC's Pascal-like system programming language) and cross-compiled on a Cyber mainframe. 
+  <li> MDI (Mainframe Device Interface) connects to a Cyber data channel.
+  <li> ESCI (Ethernet Serial Communications Interface) connects to 10BASE5 10 Mbit/second Ethernet via AUI/MAU.
+  <li> TDI (Terminal Device Interface) gives RS-232 connections in 8 or 4 per card versions.
+  <li> Other line interface modules and software allowed connection to X.25 public packet switching networks, networks using HDLC as the link layer protocol, and so on.
+  <li> Introduced circa 1985, it supplanted previous 255x NPUs, which were much larger and more expensive.
+  <li> Weight: 16kg (cabinet only, perhaps 30kg fully configured).
+  <li> Power: 120V 60Hz 1 phase, 0.6kVA.
+  <li> Heat dissipation: 369 W maximum (air cooled).
+  <li> Cost: Unknown.
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDCNET Product Descriptions. 60460590 E, January 1991.
+  <li> CDCNET Device Interface Units Brochure. 204935. 1986.
+  <li> Images used in the model courtesy of Gerard van der Grinten.
+</ul>
+`;
+const Chair_blurb = `
+<h1 style="text-align:center;">A Comfy Chair</h1>
+<br>
+<ul> 
+  <li> Because nobody expects the Spanish Inquisition.
+</ul>
+`;
+const cp415_blurb = `
+<h1 style="text-align:center;">CP 415 Card Punch</h1>
+<br>
+<ul> 
+  <li> Introduced in 1963 for use with the CDC 3000 series machines.
+  <li> One of the three standard "unit record" devices (along with card reader and line printer).
+  <li> NOS device name: CP
+  <li> Requires a 3000 type data channel (converted from 6000 type channel by a DCC6681).
+  <li> Requires a 3446 controller in an external cabinet. The -30 variant had an internal 3446.
+  <li> Punches 250 cards per minute, 1200 card input hopper, 1500 card output stacker.
+  <li> Weight: 258 kg.
+  <li> Power: 115V 1 phase 60Hz, 1.1 kVA.
+  <li> Cost: $21,147 (1980) or about $78,794.
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+</ul>
+`;
+const cpc3446_blurb = `
+<h1 style="text-align:center;">CP 3446 Card Punch Controller</h1>
+<br>
+<ul> 
+  <li> Introduced in 1963 for use with the CDC 3000 series machines.
+  <li> Housed in a "Type B" peripheral controller cabinet.
+  <li> Built from 3000 style circuit cards.
+  <li> Standard 415 card punches need this, 415-30 models have an internal controller.
+  <li> Requires a 3000 type data channel (converted from 6000 type channel by a DCC6681).
+  <li> Weight: 320kg (cabinet only)
+  <li> Power: Unclear.
+  <li> Cost: $27,804 (1980) or $103,599 (2023).
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> Control Data Pricing Manual. May 1980.
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+</ul>
+`;
+const cpu_865_blurb = `
+<h1 style="text-align:center;">Cyber 170-865 Central Computer</h1>
+<br>
+<ul> 
+  <li> Introduced in 1982, this was one of the very fastest non-vector processors available at the time.
+  <li> Along with the 170-875, it was the last of the "true" 170 series, directly descended from the CDC 6600. Other early 1980's
+    and later machines were 180 series CISC architecture, very different from the 170 series, but capable of executing 170 series
+    instructions though microcode. The 170-865 and 875 were original 6600 style RISC machines with hardwired control logic
+    (no microcode). The Peripheral Processors (see below) are also "true" 170 style 12 bit designs rather than the 16 bit designs
+    of the 180 series.
+  <li> This example has 2 CPUs in a T shaped cabinet.
+  <li> The top of the T has CPU CP0 on the right and the IOU and central memory (CM) on the left.
+  <li> The stem of the T holds CPU CP1.
+</ul>
+
+<h2>Central Processors: CP</h2>
+
+<ul>
+  <li> Each CP has 9 functional units which operate in parallel where possible, which allows for instruction level parallelism.
+  <li> A functional unit carries out a specific class of operations. The 9 units are: Boolean, Shift, Normalize, 
+    Floating-Add, Long-Add, Multiply, Divide, Population-Count and Increment.
+  <li> Apart from Divide, all these units are pipelined and can start a new instruction every clock cycle
+    (except Multiply, which can start every 2 clock cycles).
+  <li> The pipelining makes these units more like 7600 than 6600 functional units, perhaps.
+  <li> The CPs deal with 60 bit data words using a RISC instruction set (load/store, register to register operations) with
+    71 instructions.
+  <li> There is no hardware support for smaller data item sizes (no "bytes", etc.).
+  <li> Instructions are 15, 30 or 60 bits long packed into 60 bit words.
+  <li> There is an 8 word "instruction stack" which pre-fetches from memory and operates at register speeds as a
+    type of instruction cache.
+  <li> Registers are not general purpose.
+  <li> There are 8 60 bit data (X) registers, 8 18 bit integer index (B) registers and 8 18 bit address (A) registers.
+  <li> Load and store to/from X registers is implemented as a side effect of setting corresponding A registers.
+  <li> Memory protection is implemented by a base and bounds scheme, not demand paged virtual memory.
+  <li> Each process can have up to 131,072 directly addressable words in memory.
+  <li> However, "extended memory" can provide up to 16M words (120MB) of additional space, although data blocks must
+    be explicity copied from it to "normal memory" to be used. There are machine instructions to perform these copies.
+  <li> Clock rate is 40MHz (25ns) and the CPs are implemented in ECL.
+</ul>
+
+<h2>Memory</h2>
+
+<ul>
+  <li> Central memory is pipelined with 8 independent banks, clocked at 20MHz.
+  <li> Maximum sustained memory transfer rate is 20M transfers/second.
+  <li> Up to 1M words (~7.5MB) of memory can be installed (as here).
+  <li> Some of that can be used as "unified extended memory" (UEM), in addition to "external extended memory" (EEM).
+  <li> The "extended memory" can be used by user programs or partially or fully allocated for use by the operating system
+    (as a very fast swap device, for example -- like a very early SSD ... dating back to 1964 for ECS).
+  <li> Memory uses SECDED ECC internally and parity checked data paths to and from memory.
+</ul>
+
+<h2>Peripheral Processor (PPs) and Input/Output Units (IOUs)</h2>
+
+<ul>
+  <li> All input/output activity and most operating system functions run on a set of "peripheral processors" (PPs).
+  <li> These are part of the IOU and are 12 bit machines, each with a 4K 12 bit word memory but a single ALU which is
+    hardware multithreaded in a "barrel processor" arrangement.
+  <li> The CPs are (largely) controlled by the PPs.
+  <li> The PPs move data between peripheral devices and central memory (CM). The CPs process data in CM.
+  <li> There can be up to 20 PPs in 2 IOUs (as here).
+  <li> Input/output is performed over 6000 series channels by PPs.
+  <li> There can be up to 24 external channels in the IOU subsystem (as here).
+  <li> Channels are 12 bits wide and operate at up to 2MHz. There is parity checking of all transfers.
+  <li> There are 3 "internal channels" for: the system console display controller, a real time clock and a
+    communications interface for remote diagnostics.
+</ul>
+
+<h2>Physical characteristics</h2>
+
+<ul>
+  <li> The 865 central computer is cooled by a refrigerant (R-12): the cabinet is sort of a big refrigerator.
+  <li> Heat from the refrigerant is transferred to a water supply in a "condensing unit", which is the large box to the
+    left of the CPU cabinet.
+  <li> Weight: Uncertain, but the 870A weighed 3,720kg and its water cooling units 773kg. Approx 4.5 tonnes?
+  <li> Power: 115V 1 phase 60Hz: 1.1 kVA; 208V 3 phase 400 Hz: 33kVA (based on 870A, 865 information not found).
+  <li> Heat dissipation: 35kW approximately (based on 10 ton condensing unit specification).
+  <li> Cost: Unknown, but previous generation "equivalent" 175-750 with 131,072 words CM was $2,310,000 (1980) or
+    about $8,600,000 (2023). This configuration might have been significantly more expensive.
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Cyber Computer Systems Models 865 and 875. Hardware Reference Manual. 60458920 A. April 1982.
+  <li> DtCyber Simulator Source Code.
+  <li> Cyber 840A, 850A, 860A and 870A Site Preparation Manual. 60463550 C. June 1987.
+</ul>
+
+`;
+const cr405_blurb = `
+<h1 style="text-align:center;">CR 405 Card Reader</h1>
+<br>
+<ul> 
+  <li> Introduced in 1963 for use with the CDC 3000 series machines.
+  <li> One of the three standard "unit record" devices (along with card punch and line printer).
+  <li> NOS device name: CR
+  <li> One of the fastest and most reliable card readers ever built.
+  <li> Requires a 3000 type data channel (converted from 6000 type channel by a DCC6681).
+  <li> Has an internal 3447 controller.
+  <li> Reads 1200 80 column cards per minute. 4000 card input hopper and output stacker.
+  <li> Weight: 463 kg.
+  <li> Power: 208V 3 phase 60Hz: 3.4kVA.
+  <li> Heat dissipation: 2637W.
+  <li> Cost: $26,156 + $13,356 for 3447 (1980) = $39,512 or about $147,223 (2023).
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+</ul>
+`;
+const dcc6681_blurb = `
+<h1 style="text-align:center;">DCC 6681 Data Channel Converter</h1>
+<br>
+<ul> 
+  <li> 6681-F DCC chassis housed in a "Type B" peripheral controller cabinet.
+  <li> Built from 6000 style cordwood modules.
+  <li> Converts a 3000 type data channel to a 6000 type channel.
+  <li> Weight: 320kg (cabinet only)
+  <li> Power: 208V 3 phase 400Hz, unknown kVA, 120V 1 phase 60Hz, unknown kVA.
+  <li> Heat dissipation: Air cooled.
+  <li> Cost: Unknown.
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> Control Data 6681-F Data Channel Converter. 60440800 E. February 1978.
+</ul>
+`;
+const dd844_blurb = `
+<h1 style="text-align:center;">844-44 Disk Storage Unit</h1>
+<br>
+<ul> 
+  <li> Introduced in 1974.
+  <li> Provides about 180MB of disk storage using exchangeable type 883 disk packs.
+  <li> Geometry: 823 cylinders, 19 tracks, 24 sectors, 480 byte sectors (64 words + 2 12 bit bytes).
+  <li> Transfer rate: About 800KB / second. 3600 RPM.
+  <li> NOS device code: DL
+  <li> Weight: 315kg
+  <li> Power: 208V 3 phase 60Hz: 1.35kVA; 208V 3 phase 400Hz: 0.5kVA.
+  <li> Cost: $28,725 (1980) or about $107,030 (2023)
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> Control Data 844-41 Mass Storage Subsystem brochure, January 1974.
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+</ul>
+`;
+const dd885_blurb = `
+<h1 style="text-align:center;">885-12 Disk Storage Unit</h1>
+<br>
+<ul> 
+  <li> Introduced in 1980. (?)
+  <li> Provides about 1GB of disk storage on 2 spindles in 1 unit. Media not customer removable.
+  <li> Geometry: 843 cylinders, 10 tracks, 32 sectors, 256 words + 2 12 bit bytes / sector (= 1920 bytes).
+  <li> Total of 517,939,200 bytes per spindle.
+  <li> Transfer rate: About 1.5MB / second.
+  <li> NOS device code: DQ
+  <li> Weight: 490kg
+  <li> Power: 208V 3 phase 60Hz: 1.35kVA; 208V 3 phase 400Hz: 0.5kVA.
+  <li> Cost: $59,900 (1980) or about $223,190 (2023)
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+  <li> CDC 7155 Disk Storage Subsystem. 60455860 L, February 1985.
+</ul>
+`;
+const DiskPack833_blurb = `
+<h1 style="text-align:center;">Type 883 Removeable Disk Pack</h1>
+<br>
+<ul> 
+<li> Used with 844-44 disk storage unit.
+<li> Provides 180MB of exchangeable random access storage.
+<li> Weight: Unknown, maybe about 7kg?
+<li> Cost: Unknown, maybe about $500?
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+</ul>
+`;
+const Floor_1_Sign_blurb = `
+<h1 style="text-align:center;">CDC Cyber 170-865 Machine Room</h1>
+<br>
+<ul> 
+  <li> This room contains the Cyber 170-865 computer and its local peripherals.
+  <li> The 170-865 was introduced in 1982, but this configuration includes some items
+    that were introduced later, notably the CDCNET DI device.
+  <li> This would date the configuration shown here to after 1986. Perhaps 1990. 
+  <li> The system runs under the NOS 2.8.7 operating system.
+  <li> It includes compilers for Algol 60, Algol 68, COBOL, Cybil, FORTRAN IV (FTN 4), FORTRAN-77 (FTN 5),
+    Pascal, Sympl and more.
+  <li> It includes interpreted languages too: APL, BASIC and Lisp.
+  <li> It can support up to 200 simultaneous interactive users working at terminals attached via
+    CDCNET DI-s (in Terminal Device Interface configuration). Other connection options include local
+    serial connections to multiplexers, remote connections via modems to multiplexers, or older
+    255x Network Processing Unit attachments. These are not present in this configuration, though.
+  <li> In a 24 hour period, it might also process up to 15,000 batch jobs.
+  <li> Those batch jobs might be submitted interactively, read from cards in this room, or submitted
+    from remote batch job entry systems using Remote Batch Facility (RBF). At the time of this
+    configuration, use of punched cards would be quite rare, however.
+  <li> The system has extensive networking capabilities. In addition to the now ubiquitous TCP/IP,
+    NOS has its own NHP (Network Host Products), and supports NOS/VE's CDCNET, IBM's NJE (Network
+    Job Entry) and RJE (Remote Job Entry) and X.25 public packet switching networks.
+</ul>
+
+<h2>Users and Applications</h2>
+
+Major users of the Cyber 170 family of machines included:
+<ul>
+  <li> Higher education. A very popular choice for Universities in the 1970s and 80s. The
+    University of Massachusetts and University of London are just two of dozens of examples.
+    Such systems supported education and research throughout these institutions, with many
+    thousands of registered users.
+  <li> Aerospace and automotive industries. Boeing and Chrysler were major users, for example.
+    A lot of CAD/CAM work was supported by these machines.
+  <li> Nuclear research. CERN was a long term customer in the particle physics area. Also a
+    popular choice for nuclear power related research and engineering (e.g. CEA in France)
+  <li> National laboratories. All U.S. national laboratories used these machines, often on
+    classified projects, including nuclear weapons related work. Lawrence Livermore National
+    Laboratory wrote their own operating system for the 7600/170-176: LTSS, later ported to
+    Cray hardware as CTSS (not to be confused with MIT's ground breaking CTSS of 1962). 
+  <li> Electric power utilities. CDC's smaller machines were very widely used for power grid
+    management and perhaps for this reason, the larger Cyber 170 machines were often found
+    in the headquarters of electric power companies.
+  <li> National security. The NSA in the U.S. used many Cyber 170 architecture machines and wrote
+    their own operating system for them -- FOLKLAW, originally called IDASYS -- which provided
+    a full screen editing and user interface experience starting in 1967 on a CDC 6600, and was
+    used until 1996 (at the end on Cray hardware). GCHQ in the U.K. were also CYBER 170 users.
+  <li> Military programs. These machines were used widely in the U.S. military (e.g. U.S. Navy
+    Fleet Numerical Oceanography Center was a repeat customer from 1969 to the late '80s). They
+    also were key components of specific systems such as PAVE PAWS and mission data processing at
+    Vandenberg AFB -- possibly still ongoing using emulated hardware.
+  <li> Oil and gas exploration companies.
+  <li> Civil engineering companies.
+  <li> Weather forecasting. In addition to their own capabilities, the CYBER 170 machines under NOS
+    were a very good front end for Cray vector supercomputers.
+</ul>
+These machines were found throughout large science, technology and engineering based organisations.
+They were not so often used for business applications, though, in spite of a good COBOL compiler
+and database facilities.
+
+<br><br>
+It is fair to say that there was a sharp decline in their popularity in the late 1980's,
+as part of a universal trend to using cheaper, "open" systems, usually running some version
+of the Unix operating system, as well as the explosion of IBM compatible PCs sitting on people's
+desks, almost always running some version of DOS or Windows. The latter brought an end to
+"timesharing" as a way of delivering small scale computing services to individuals.
+
+<h2>Physical characteristics and cost</h2>
+
+The power consumption, heat generation, weight and cost of each component of the system
+is given in the information for that component, where known. Here is a summary of that
+information, giving an estimate of the total power usage, weight and cost of the system as
+a whole.
+
+<font size=1>
+<pre>
+---------------------------------------------------------------------------
+                          Per item                        Total
+                 --------------------------     --------------------------
+Item      Count  Power  Weight  Heat  Cost      Power  Weight  Heat  Cost
+                 kVA    kg      kW    $1980     kVA    kg      kW    $1980
+----------------------------------------------------------------------------
+865 CPU   1     35?     4500?   35?   2500000?  35?    4500?   35?   2500000?
+CC545     1      1.33    177     1.2  --         1.33   177     1.2  --            
+ESM       1     10?     1000?   10?   2000000?  10?    1000?   10?   2000000?
+7155-401  4      2.3     159     1      65490    9.2    636     4     261960
+844-44    1      1.85    315     1.5    28725    1.85   315     1.5    28725
+855-12    5      1.85    490     1.5    59900    9.25  2450     7.5   299500
+405+3447  1      3.4     463     2.7    39512    3.4    463     2.7    39512
+3446      1      1?      320     1?     27804    1?     320     1?     27804
+6681      1      1?      320     1?     20000?   1?     320     1?     20000?
+679-7     4      3       410     2.4    33510   12     1640     9.6   134040
+7021-31   1      0.84    158     0.8    30608    0.84   158     0.8    30608
+DI        1      0.5?     30?    0.35?  10000?   0.5?    30?    0.35?  10000?
+-----------------------------------------------------------------------------
+                                         TOTAL  85.37 kVA
+                                                      12009 kg
+                                                               74.65 kW
+                                                            $5,352,149 (1980)
+                                                       or  $19,991,900 (2023)
+</pre>
+</font>
+Although there is some uncertainty about some of these items, it is clear that
+a good electricity supply, strong floors and very deep pockets were needed to
+own (or rent) one of these systems! Even with a big discount.
+
+<h2>Sources</h2>
+
+<ul>
+  <li> Control Data Pricing Manual. May 1980.
+  <li> Control Data Software and Hardware Product Descriptions. May 1980.
+  <li> DtCyber simulator source code.
+  <li> Personal communications and recollections.
+  <li> NSA Cryptolog 134 (Vol.XXII, No. 4), Winter 1996.
+  <li> VIM (CDC User Group) Membership Roster, November 1984.
+  <li> "The Last Cyber Mainframes, a 39 year era comes to an end", Nellis Air Force
+    Base News, 2nd Range Operations Squadron, Published June 21, 2021
+  <li> PAVE PAWS when first <a href="https://www.youtube.com/watch?v=uuJTWM69ZqI" target="_blank" rel="noopener noreferrer">installed (click to view)</a>
+    and <a href="https://www.youtube.com/watch?v=BMnavJeT3HE&t=49s" target="_blank" rel="noopener noreferrer">some decades later</a> in 2014, with displays
+    whose contents seem to not have changed much over that period.
+</ul>
+
+`;
+const lp512_blurb = `
+<h1 style="text-align:center;">512 Train Line Printer</h1>
+<br>
+<ul>
+  <li> Train printer with interchangeable print train cartridges.
+  <li> NOS device name: LQ
+  <li> Up to 1200 lines per minute (depending on print train).
+  <li> Superceded by Model 580 train printer (2000 lpm) at the end of 1970s.
+  <li> Print trains: 595-1 (63 chars), -2, -3 (48 chars, fastest), -4 (63 chars, CDC), -5 (63 chars ASCII) -6 (94 chars ASCII)
+  <li> Internal 3555 line printer controller, interfaces to 3000 series channel (hence 6681 data channel converter needed). 
+  <li> Weight: 454 kg.
+  <li> Power: 208V 3 phase 400Hz, 0.3 kVA, 208V 3 phase 60Hz, 2.5 kVA.
+  <li> Cost: $50,085 (1980) or $185,807 (2023). 
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> NOS Version 1 Operator's Guide, 60435600 A, June 1975. Appendix D: Peripheral Equipment Operation.
+</ul>
+`;
+const msc7155_blurb = `
+<h1 style="text-align:center;">7155-401 Mass Storage Controller</h1>
+<br>
+<ul> 
+  <li> Accesses up to 4 885 disk storage units (DSUs).
+  <li> Accesses additional 885 and 844 DSUs with 10398 and 10399 options.
+  <li> 10398 option adds support for up to 8 844 DSUs.
+  <li> 10399 option adds support for another 4 855 DSUs.
+  <li> Connects to Cyber 170 data channel. But also ...
+  <li> The -401 model supports Direct Extended Memory Access (DEMA) to transfer data directly to
+    Extended Semiconductor Memory (ESM) low speed port, avoiding channel usage.
+  <li> To improve throughput, more than one controller would usually be used with the 11 disks (or spindles) we have here.
+  <li> A better configuration might use 4 controllers, as shown.
+  <li> Each disk unit typically could be connected to 2 controllers.
+  <li> Each controller could typically be connected to 2 channels.
+  <li> Thus, a well-tuned configuration would provide 2 paths to each spindle.
+  <li> In case one of the controllers providing access to a spindle was busy servicing an I/O request,
+    chances are that the other controller providing a path to the spindle would not be busy.
+  <li> Also, each controller could be performing a seek on one spindle while streaming data to/from another.
+  <li> The NOS operating system took full advantage of these peripheral device features and could
+    provide massive throughput (for the time) as a result.
+  <li> Weight: 159 kg.
+  <li> Power: 208V 3 phase 400Hz, 1.3kVA + 120V 1 phase 60Hz 1.1kVA.
+  <li> Heat: 3311 BTU/hour or 970W.
+  <li> Cost: $39,990 + $9,950 (10398) + $15,550 (10399) = $65,490 (1980) = $244,018 (2023).
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> CDC 7155 Disk Storage Subsystem. 60455860 L, February 1985.
+</ul>
+`;
+const mt679_blurb = `
+<h1 style="text-align:center;">MT 679-7 Tape Transport</h1>
+<br>
+<ul>
+  <li> 9 track tape transport.
+  <li> NOS device name: NT
+  <li> 1600 characters per inch (CPI) PE and 6250 CPI GE.
+  <li> 200 inch per second tape speed.
+  <li> Transfer rate: approximately 1.25 MBytes / second.
+  <li> Capacity: 170 MBytes maximum, 110 MBytes typical at 4K block size.
+  <li> Weight: 410 kg.
+  <li> Power: 208V 3 phase, 3kVA.
+  <li> Heat: 8190 BTU/hour or 2400W.
+  <li> Cost: $33,510 (1980) = $124,574 (2023)
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> Control Data Pricing Manual. May 1980.
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+</ul>
+`;
+const mtc7021_blurb = `
+<h1 style="text-align:center;">7021-31 Magnetic Tape Controller</h1>
+<br>
+<ul> 
+<li> Controls up to 8 67x tape units.
+<li> Connects to a Cyber 170 data channel.
+<li> Deals with 1600 CPI PE, 6250 CPI GE, 556/800 CPI NZRI, 7 or 9 track.
+<li> Weight: 158 kg.
+<li> Power: 208V 3 phase 400Hz, 0.61kVA + 120V 1 phase 60Hz 0.24kVA.
+<li> Heat: 2750 BTU/hour or 806W.
+<li> Cost: $30,608 for -21 (1980) = $113,708 (2023).
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+  <li> CDC Magnetic Tape Subsystem 7021-21/22 Magnetic Tape Controller 60403900 V, April 1982.
+</ul>
+`;
+const rp_dennis_posed_004_30k_blurb = `
+<h1 style="text-align:center;">Virtual Museum Volunteer</h1>
+<br>
+<ul> 
+<li> Hello, my name is Dennis.
+<li> I am 1.84 metres (6 feet) tall, which may help you judge the scale of the equipment.
+<li> I was created using photogrammetry by RenderPeople. This version of me has 30,000 polygons.
+<li> I am one of the three free models available from <a href="https://renderpeople.com/free-3d-people/" target="_blank" rel="noopener noreferrer">RenderPeople</a>.
+<li> Perhaps in the future I will be able to speak with you by means of AI. Or maybe not!
+</ul>
+`;
+const rp_mei_posed_001_30k_blurb = `
+<h1 style="text-align:center;">Virtual Museum Volunteer</h1>
+<br>
+<ul> 
+<li> Hello, my name is Mei.
+<li> I am 1.67 metres (5 feet 5.75 inches) tall, which may help you judge the scale of the equipment.
+<li> I was created using photogrammetry by RenderPeople. This version of me has 30,000 polygons.
+<li> I am one of the three free models available from <a href="https://renderpeople.com/free-3d-people/" target="_blank" rel="noopener noreferrer">RenderPeople</a>.
+<li> Perhaps in the future I will be able to speak with you by means of AI. Or maybe not!
+</ul>
+`;
+const PowerControl_blurb = `
+<h1 style="text-align:center;">Power Control and Environment Monitoring</h1>
+<br>
+<ul> 
+<li> This rack houses the System Power Control Panel (SPCP) and environment monitoring equipment.
+<li> The computer uses 3 AC power supplies:
+  <ul>
+    <li> 400Hz 3 phase 208V. This is in many ways the primary power supply, although the others are also
+      essential. The higher AC frequency significantly simplifies the design of linear power supplies, which
+      need to deliver tens of kilowatts. The 400Hz supply is generated by motor-generator sets in the basement.
+      These take the normal 3 phase 60Hz or 50Hz AC electricity from the grid and convert it to 400Hz mechanically.
+      The input electricity spins a motor which is coupled directly to an alternator wired to output 400Hz 3 phase,
+      208 volts. The inertia of the mechanical parts of the generator help with power conditioning too.
+    <li> 60Hz or 50Hz 3 phase, 208V. This is delivered via equipment in the basement pretty much directly from the
+      grid.
+    <li> 60Hz or 50Hz 1 phase, 120V or 220V (a normal household type supply) is used by a few pieces of equipment.
+  </ul>
+<li> The System Power Control Panel is used to start and stop the motor-generator sets for the 400Hz supply and indicates when
+  they are up to speed and delivering power.
+<li> It can also adjust the 400Hz supply voltage by plus and minus 5 percent for voltage margin testing by controlling the
+  motor-generators remotely.
+<li> An elapsed hours meter tracks how long the motor-generator sets have been running.
+<li> There is probably also a master power on/off control, labelled "emergency off" here.
+<li> Because the central computer is cooled by refrigeration, the humidity and temperature in the machine room must be
+  monitored and controlled to ensure that dew doesn't form. This could be disastrous for obvious reasons. The equipment
+  here includes a hygrometer and there are temperature sensors throughout the central computer and peripherals that monitor
+  these environmental conditions and issue alarms if they exceed the safe range.
+<li> It is believed that the equipment in this rack produces both audible and visible warnings of alarm conditions.
+</ul>
+There was probably a way to use an uninterruptable power supply (UPS) to cover longer external power supply problems
+(the M-G sets could only "ride through" very short, sub one second, fluctuations). Details are not currently known,
+though.
+
+<h2>Sources</h2>
+
+Frankly, minimal. This was an even more difficult case than the ESM. The model and the account given here
+is based on:
+<ul>
+  <li> Two photographs from the CERN machine room in the 875 period and some years earlier, both of which show something
+    very similar to the model here.
+  <li> A still from Gerard van der Grinten's video: "Rijks Universiteit Groningen - Rekencentrum 1987" which shows
+    the same cream coloured power control panel and some (different) items that seem to again include a hygrometer.
+  <li> None of these photographs are clear enough to be sure what is on the panels, much less to read the legends.
+  <li> CDC CYBER 170 COMPUTER SYSTEMS MODELS 835, 845 AND 855 HARDWARE OPERATOR'S GUIDE, 60458390 F, October 1985. This
+    discusses the functions of the System Power Control Panel (SPCP) and has a drawing of it, which does not look much
+    like the items found in the photographs above, but does seem to have the same number of controls, a meter, a
+    hygrometer and an elapsed hours counter -- which may be on the device in the photographs.
+</ul>
+The model as built is probably the best that can be done for now, absent further, better, information.
+`;
+const Condenser_5_tion_blurb = `
+<h1 style="text-align:center;">5 Ton Condensing Unit</h1>
+<br>
+<ul>
+  <li> Transfers heat from R-22 refrigerant circulating in the Extended Semiconductor Memory (ESM) chassis to circulating water
+    supplied by the building. That water is ultimately cooled by chillers on the roof.
+  <li> The "5 tons" refers to the heat the unit can dissipate. The unit removes enough heat to melt
+    5 (short) tons of pure ice at 0 Celsius in a 24 hour period.
+  <li> 1 ton of refrigeration is equivalent to 3,517 Watts or 12,000 BTU. This unit can therefore dissipate about 17kW.
+  <li> We don't have detailed information on the dimensions of this unit, so the model is based on the 18677-1 water cooling
+    unit used for the 860A and 870A computers. Ths was the smaller of two water cooling units used with those machines.
+  <li> Weight maybe about 270kg (as per the 18677-1 device).
+  <li> R-22 is chlorodifluoromethane, a powerful greenhouse gas and a low but still unacceptable ozone depleter.
+    Use of this has been almost entirely phased out as of 2023. 
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Systems Site Preparation Manual. Mainframe Complex Data CYBER 840A, 850A, 860A and 870A. 60463550 C, June 1987.
+  <li> E. J. Hines, Personal communication, October 2023.
+</ul>
+`;
+const Condenser_10_ton_blurb = `
+<h1 style="text-align:center;">10 Ton Condensing Unit</h1>
+<br>
+<ul>
+  <li> Transfers heat from R-12 refrigerant circulating in the CPU chassis to circulating water
+    supplied by the building. That water is ultimately cooled by chillers on the roof.
+  <li> The "10 tons" refers to the heat the unit can dissipate. The unit removes enough heat to melt
+    10 (short) tons of pure ice at 0 Celsius in a 24 hour period. 
+  <li> 1 ton of refrigeration is equivalent to 3,517 Watts or 12,000 BTU. This unit can therefore get rid of about 35kW of generated heat.
+  <li> We don't have detailed information on the dimensions of this unit, so the model is based on the 18675-1 water cooling
+    unit used for the 860A and 870A computers. This was the larger of two water cooling units used with those machines.
+  <li> Weight maybe about 720kg (as per the 18675-1 device).
+  <li> R-12 is Dichlorodifluoromethane, a powerful ozone depleter, which has been phased out as of 2023. It was replaced with R-401a at some CDC
+    sites. This is a mixture of three refrigerants which has more acceptable properties than R-12.
+</ul>
+
+<h2>Sources</h2>
+
+<ul>
+  <li> CDC Systems Site Preparation Manual. Mainframe Complex Data CYBER 840A, 850A, 860A and 870A. 60463550 C, June 1987.
+  <li> E. J. Hines, Personal communication, October 2023.
+</ul>
+`;
+const helpInfo = `
+<h1 style="text-align:center;">Visible Cyber Project</h1>
+<br>
+This project is an adjunct to the Nostalgic Computing Center (NCC) fork of DtCyber.
+
+<br><br>
+DtCyber is a high fidelity simulator of Control Data 6000, 70, 170, and 700
+series supercomputers. The NCC version is a direct derivative of Desktop CYBER 5.5.1
+created by Tom Hunter, greatly enhanced by Kevin Jordan, with contributions from
+several other people.
+
+<br><br>
+This version of DtCyber can be found on <a href="https://github.com/kej715/DtCyber" target="_blank" rel="noopener noreferrer">Github</a>
+
+<br><br>
+A number of "ready-to-run" systems are available to use with DtCyber. Running and
+using these systems can be fascinating, but people doing so might wonder:
+<p>
+  <i>"What did these systems actually look like? How much space did they occupy?
+  How much heat did they produce and what sort of power supplies did they need?"</i>
+</p>
+There are photographs of many CDC systems on the Internet, but the detailed appearance
+of many items often isn't clear. The later systems (from the 1980's onwards) are
+particularly poorly illustrated by photographs.
+
+<br><br>
+Here, we are attempting to visualise <b>the specific system configuration</b> for the
+NOS 2.8.7 "ready-to-run" system which is based around a Cyber 170-865 central
+computer. In this way, people can see the actual machine they are using ...
+sort of!
+
+<br><br>
+In addition to the 3D visualisation, we also aim to present information about each
+item of equipment in the configuration -- especially its physical characteristics
+(such as power consumption and weight), and also its nominal cost in 1980 and 2023
+US dollars ... which may be surprising!
+
+<h2>Usage</h2>
+
+<ul>
+  <li> The camera can be rotated horizontally (in "azimuth") and vertically (in "elevation") about the point
+    it is looking at by holding down the left mouse button and dragging left
+    and right or up and down. A single touch and drag on a tablet should
+    also do this.
+  <li> The camera "orbits" the point it is looking at (the camera target).
+  <li> You can move towards or away from the camera target using the 
+    middle mouse wheel or pinch on tablets.
+  <li> The camera is initially looking at the approximate center of the room, towards
+    the central computer, at a horizontal angle of 90 degrees and a vertical angle
+    of 65 degrees.
+  <li> Double clicking on a piece of equipment will:
+       <ul>
+         <li> Move the camera target to the center of that equipment.
+         <li> Move the camera 3 meters from that center point, keeping the viewing
+           angles the same as before.
+         <li> Present information on the selected equipment, either as a popup
+           scrollable dialog presenting text, or by spoken word. Which method is used is controlled
+           by the <b>Use speech</b> boolean button in the small GUI at the top of the display.
+       </ul>
+  <li> If you choose to use spoken word information, you will need to
+    allow audio output by clicking on the <b>"muted loudspeaker"</b> icon that will
+    appear the first time you use this method.
+  <li> There are two "virtual museum volunteers" who will talk to you in this
+    spoken information mode: Mei and Dennis. If you double click on them, they will
+    tell you about themselves.
+  <li> If you grow tired of listening to a spoken description, you can stop it by pressing
+    the <b>Stop speaking</b> button. Neither volunteer will be offended by this.
+  <li> If you have red/blue anaglyph viewing glasses, you can switch to an
+    anaglyph rendering by turning on the <b>Anaglyph camera</b> radio button for an
+    enhanced 3D experience. The anaglyph and normal cameras are positioned independently of one another.
+  <li> You can also adjust the camera position using keyboard shortcuts:
+    <ul>
+      <li> <b>f</b> : Moves the camera away from the central computer along the long axis of the room.
+        The camera viewing angles are unchanged. The camera and target positons are moved in
+        10 centimeter steps. These notes apply to all the following camera movement short cuts.
+      <li> <b>b</b> : Moves the camera towards the central computer along the long axis of the room.
+      <li> <b>r</b> : Moves the camera towards the right edge of the room, along its short axis.
+      <li> <b>l</b> : Moves the camera towards the left edge of the room, along its short axis.
+      <li> <b>u</b> : Moves the camera up, away from the floor.
+      <li> <b>d</b> : Moves the camera down, towards the floor.
+      <li> <b>c</b> : Resets the camera to the initial viewing position and angles as when the scene
+        is loaded.
+      <li> <b>g</b> : Looks vertically down on the scene from a great height to give a "God's eye" view.
+    </ul>
+  <li> Pressing the <b>Toggle ambient</b> button will turn ambient machine room sounds on or off. These sounds were
+    extracted from a video of a machine room containing CDC Cyber computers (see below). They add greatly
+    to the overall experience.
+</ul>
+
+<h2>Information sources and technologies</h2>
+
+Every attempt has been made to use the correct dimensions for each item of equipment.
+The primary source of dimensions and overall layout is:
+<ul>
+  <li> CDC Peripheral Equipment Data Site Preparation Manual. 60275300 P, January 1983.
+</ul>
+The popup dialog descriptions of each piece of equipment include more on the information sources used for it.
+
+The legends on the equipment buttons and other controls were obtained from:
+<ul>
+  <li> NOS Version 2 Operator/Analyst Handbook, 60459310 B, January 1983. Appendix D: Peripheral Equipment Operation.
+  <li> NOS Version 1 Operator's Guide, 60435600 A, June 1975. Appendix D: Peripheral Equipment Operation.
+</ul>
+
+Prices in 1980 US dollars were taken from:
+<ul>
+  <li> Control Data Pricing Manual. May 1980.
+</ul>
+Conversion to 2023 US dollars was done using the <a href="https://www.usinflationcalculator.com" target="_blank" rel="noopener noreferrer">Coin News US Inflation Calculator</a>.
+
+Information on the 865 central computer was taken from:
+<ul>
+  <li> CDC Cyber Computer Systems Models 865 and 875. Hardware Reference Manual. 60458920 A. April 1982.
+  <li> DtCyber Simulator Source Code.
+  <li> Cyber 840A, 850A, 860A and 870A Site Preparation Manual. 60463550 C. June 1987.
+</ul>
+Unfortunately, we do not have a Site Preparation Manual for the 865, so the 870A information was used
+to try to fill in gaps about power consumption, etc. (but not cooling, as the 870A is cooled by water
+rather than freon).
+
+<br><br>
+All of the above documents are to be found at <a href="http://www.bitsavers.org" target="_blank" rel="noopener noreferrer">Bitsavers</a>,
+without which neither this project nor DtCyber
+itself would be possible.
+
+<br><br>
+In spite of this, "artistic license" has been used fairly liberally, as there just isn't enough
+detailed information available to construct really accurate 3D models in many cases. The ESM device,
+for example, was "invented" almost entirely from a single photograph of CERN's computer center and
+Kevin's recollections of it!
+
+<br><br>
+Images used in the creation of models include:
+<ul>
+  <li> <a href="https://cc0-textures.com/t/th-dark-wood" target="_blank" rel="noopener noreferrer">CC545 wood (Texture Haven, public domain)</a>
+  <li> <a href="http://pa0gri.ampr.org/cdc/CDCNET_DI/index.html" target="_blank" rel="noopener noreferrer">CDCNET DI</a> (thanks to Gerard van der Grinten)
+  <li> <a href="http://dennis-ernst.net/Purdue%20Computer%20Center" target="_blank" rel="noopener noreferrer">DCC6681 and CPC3446</a> innards found in images of Purdue Computer Center taken by Dennis Ernst.
+</ul>
+
+<br><br>
+The ambient sound was taken from:
+<ul>
+  <li> <a href="http://pa0gri.ampr.org/cdc/rekenhal87.wmv" target="_blank" rel="noopener noreferrer">Rijks Universiteit Groningen - Rekencentrum 1987</a> also from Gerard van der Grinten.
+</ul>
+This is a really valuable recording.
+
+<br><br>
+The 3D models of Mei and Dennis were created by <a href="https://renderpeople.com" target="_blank" rel="noopener noreferrer">Renderpeople</a> using photogrammetry. These are two of the three posed models they make available at no cost. Prices for their other models seem very reasonable considering the excellent quality, actually.
+
+<br><br>
+Technologies used to create this thing include:
+<ul>
+  <li> <a href="https://www.blender.org" target="_blank" rel="noopener noreferrer">Blender V3.5</a>: A stunningly good open source 3D graphics modelling, animation and rendering system.
+  <li> <a href="https://www.babylonjs.com" target="_blank" rel="noopener noreferrer">Babylon.js</a>: An equally superb web rendering engine which allows WebGL, glTF and HTML 5 to be fully exploited. Its "playground" and "sandbox" web sites were invaluable. 
+  <li> <a href="https://gltf-transform.dev" target="_blank" rel="noopener noreferrer">glTF Transform</a>: This was invaluable for compressing glTF files to much more manageable sizes.
+  <li> <a href="https://ttsmaker.com/?ref=allthingsai.com" target="_blank" rel="noopener noreferrer">TTSMAKER</a>: A free text to speech service without which Mei and Dennis would be mute. The specific voices used are "2407 Sarah" for Mei and "147 Peter" for Dennis.
+  <li> <a href="https://inkscape.org" target="_blank" rel="noopener noreferrer">Inkscape</a> was used to prepare texture maps and SVG for text that Blender could convert to 3D models. Fonts that seem close (but not identical) to those used by CDC on its equipment are: "League Gothic" and "Euphemia UCAS".
+  <li> <a href="https://openai.com"  target="_blank" rel="noopener noreferrer">Chat GPT 3.5</a> helped with some CSS code.
+  <li> <a href="https://www.audacityteam.org" target="_blank" rel="noopener noreferrer">Audacity</a> was used to do some very basic audio editing.
+</ul>
+Along with Python 3.x, Javascript, HTML, CSS and their ecosystems. We hope to use outstanding technologies of today to showcase
+outstanding technologies of the past.
+
+<br><br>
+Note that we are not using Babylon.js to its full potential (to say the least) -- it is capable of greater photorealism using
+baked textures, for example.
+
+<h2>Credits</h2>
+
+<ul>
+  <li> Concept: Nick Glazzard and Kevin Jordan.
+  <li> Implementation: Nick Glazzard.
+  <li> Special thanks: Gerard van der Grinten and Jerry Hines.
+</ul>
+
+<br><br>
+This is intended to be an open source visualisation project. Some sort of "Creative Commons" licence should probably apply. Details to be determined.
+
+
+<h2>Similar Projects</h2>
+
+We are not aware of any other project that aims to visualise a specific historic machine configuration that matches a simulated historic machine using interactive 3D technologies. There may be others, though, as it is a big world.
+
+<br><br>
+Some other 3D machine room visualisations (as pre-rendered movies and stills) that we found inspiring are:
+
+<ul>
+  <li> <a href="https://www.facebook.com/TheSupercomputers" target="_blank" rel="noopener noreferrer">Dreaming Machines</a> on Facebook. This has some lovely material and concentrates on CDC and Cray systems too. This is where the idea of adding virtual humans to our scene came from.
+  <li> <a href="https://www.youtube.com/watch?v=Lr_m8IhKzbo&t=208s" target="_blank" rel="noopener noreferrer">The IBM 370 Brought back to life</a> on Youtube.
+  <li> <a href="https://www.youtube.com/watch?v=jZVkqASp1Kk" target="_blank" rel="noopener noreferrer">IBM System/370 3033 Mainframe Processor Complex - 3D Model Flyby</a>
+  <li> <a href="https://www.youtube.com/watch?v=xEPJiPu1fKA" target="_blank" rel="noopener noreferrer">IBM System /370 - Rechenzentrum 1974</a> Very nice modelling and rendering in this one.
+</ul>
+There are probably many others out there.
+`;
+
+      // Define the contents of the scene.
+      // WARNING: Many things are started here and run asynchronously. Variables you might think would
+      // have valid contents may not (probably will not!).
+      var createScene = function () {
+
+          // Use a right handed coordinate system for Blender glTF compatibility.
+          var scene = new BABYLON.Scene(engine);
+          scene.useRightHandedSystem = true;
+
+          // Apply post-rendering image processing tweaks. 
+          scene.imageProcessingConfiguration.contrast = 1.6;
+	  scene.imageProcessingConfiguration.exposure = 0.8;
+	  scene.imageProcessingConfiguration.toneMappingEnabled = true;
+
+          // Create a camera. Adjust clipping planes to allow getting close, but within a room(ish) maximum distance.
+          var camera = new BABYLON.ArcRotateCamera("camera",
+                                                   BABYLON.Tools.ToRadians(90),
+                                                   BABYLON.Tools.ToRadians(65),
+                                                   10,
+                                                   BABYLON.Vector3.Zero(),
+                                                   scene);
+          camera.minZ = 0.1;
+          camera.maxZ = 50.0;
+
+          // This attaches the camera to the canvas.
+          camera.attachControl(canvas, true);
+
+          // Adjust camera control behaviour.
+          camera.wheelDeltaPercentage = 0.05;
+          camera.zoomToMouseLocation = true;
+          camera.upperRadiusLimit = 30.0;
+          camera.lowerRadiusLimit = -30.0;
+          camera.lowerBetaLimit = 0.1;
+          camera.upperBetaLimit = BABYLON.Tools.ToRadians(88);
+
+          // Create another camera for anaglyph viewing.
+          var ana_camera = new BABYLON.AnaglyphArcRotateCamera("ana_camera",
+                                                               BABYLON.Tools.ToRadians(90),
+                                                               BABYLON.Tools.ToRadians(65),
+                                                               10,
+                                                               BABYLON.Vector3.Zero(),
+                                                               0.031,
+                                                               scene);
+          ana_camera.minZ = 0.1;
+          ana_camera.maxZ = 50.0;
+          ana_camera.wheelDeltaPercentage = 0.05;
+          ana_camera.zoomToMouseLocation = true;
+          ana_camera.upperRadiusLimit = 25.0;
+          ana_camera.lowerRadiusLimit = -25.0;
+          ana_camera.lowerBetaLimit = 0.1;
+          ana_camera.upperBetaLimit = BABYLON.Tools.ToRadians(88);
+
+
+          // Use the specified environment file.
+          scene.environmentTexture = new BABYLON.CubeTexture("room-1.env", scene);
+    
+const a_esm_audio = new BABYLON.Sound("a_esm_audio", "audio-esm.mp3", scene);
+const cc545_audio = new BABYLON.Sound("cc545_audio", "audio-cc545.mp3", scene);
+const cdcnet_di_audio = new BABYLON.Sound("cdcnet_di_audio", "audio-cdcnet-di.mp3", scene);
+const Chair_audio = new BABYLON.Sound("Chair_audio", "audio-chair.mp3", scene);
+const cp415_audio = new BABYLON.Sound("cp415_audio", "audio-cp415.wav", scene);
+const cpc3446_audio = new BABYLON.Sound("cpc3446_audio", "audio-cp3446.mp3", scene);
+const cpu_865_audio = new BABYLON.Sound("cpu_865_audio", "audio-cpu-865.mp3", scene);
+const cr405_audio = new BABYLON.Sound("cr405_audio", "audio-cr405.mp3", scene);
+const dcc6681_audio = new BABYLON.Sound("dcc6681_audio", "audio-dcc6681.mp3", scene);
+const dd844_audio = new BABYLON.Sound("dd844_audio", "audio-dd844.mp3", scene);
+const dd885_audio = new BABYLON.Sound("dd885_audio", "audio-dd885.mp3", scene);
+const DiskPack833_audio = new BABYLON.Sound("DiskPack833_audio", "audio-disk-pack-883.mp3", scene);
+const Floor_1_Sign_audio = new BABYLON.Sound("Floor_1_Sign_audio", "audio-room-1.mp3", scene);
+const lp512_audio = new BABYLON.Sound("lp512_audio", "audio-lp512.mp3", scene);
+const msc7155_audio = new BABYLON.Sound("msc7155_audio", "audio-msc7155.mp3", scene);
+const mt679_audio = new BABYLON.Sound("mt679_audio", "audio-mt679.mp3", scene);
+const mtc7021_audio = new BABYLON.Sound("mtc7021_audio", "audio-mtc7021.mp3", scene);
+const rp_dennis_posed_004_30k_audio = new BABYLON.Sound("rp_dennis_posed_004_30k_audio", "audio-dennis.mp3", scene);
+const rp_mei_posed_001_30k_audio = new BABYLON.Sound("rp_mei_posed_001_30k_audio", "audio-mei.mp3", scene);
+const PowerControl_audio = new BABYLON.Sound("PowerControl_audio", "audio-power.mp3", scene);
+const Condenser_5_tion_audio = new BABYLON.Sound("Condenser_5_tion_audio", "audio-5-ton.mp3", scene);
+const Condenser_10_ton_audio = new BABYLON.Sound("Condenser_10_ton_audio", "audio-10-ton.mp3", scene);
+
+const ambient_sound = new BABYLON.Sound("Ambient", "audio-ambient.mp3", scene, null, {
+  loop: true,
+  autoplay: false,
+});
+
+load_glb_file( webSiteRoot, "a-opt-esm.glb", scene, a_esm_blurb, a_esm_audio, 2.3139, 0.9003, -2.6838, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-cc545.glb", scene, cc545_blurb, cc545_audio, 0.4479, 0.8568, -2.1614, 1.0, 0.00 );
+load_glb_file( webSiteRoot, "a-opt-di-rack.glb", scene, cdcnet_di_blurb, cdcnet_di_audio, 2.2576, 0.3042, 1.6699, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-chair.glb", scene, Chair_blurb, Chair_audio, 0.4479, 0.4902, -0.9858, 1.0, 0.00 );
+load_glb_file( webSiteRoot, "a-opt-condenser-10-ton.glb", scene, Condenser_10_ton_blurb, Condenser_10_ton_audio, -4.3396, 0.7181, -2.1159, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-condenser-5-ton.glb", scene, Condenser_5_tion_blurb, Condenser_5_tion_audio, 1.4286, 0.6286, -5.4447, 1.0, 0.00 );
+load_glb_file( webSiteRoot, "a-opt-cp415.glb", scene, cp415_blurb, cp415_audio, 2.2786, 0.5132, 9.7115, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-cpc3446.glb", scene, cpc3446_blurb, cpc3446_audio, 2.2678, 0.7444, 8.3922, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-cpu-865.glb", scene, cpu_865_blurb, cpu_865_audio, -1.3612, 0.9616, -3.7062, 1.0, 0.00 );
+load_glb_file( webSiteRoot, "a-opt-cr405.glb", scene, cr405_blurb, cr405_audio, -1.4758, 0.6048, 11.1963, 1.0, -180.00 );
+load_glb_file( webSiteRoot, "a-opt-dcc6681.glb", scene, dcc6681_blurb, dcc6681_audio, 2.2707, 0.7444, 6.9366, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-dd844.glb", scene, dd844_blurb, dd844_audio, -3.0617, 0.5593, 2.4994, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-dd885.glb", scene, dd885_blurb, dd885_audio, -2.8426, 0.5579, 3.4438, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-dd885.glb", scene, dd885_blurb, dd885_audio, -2.8565, 0.5579, 4.6910, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-dd885.glb", scene, dd885_blurb, dd885_audio, -2.8495, 0.5579, 5.9246, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-dd885.glb", scene, dd885_blurb, dd885_audio, -2.8468, 0.5579, 7.1860, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-dd885.glb", scene, dd885_blurb, dd885_audio, -2.8454, 0.5579, 8.4332, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-disk-pack-833.glb", scene, DiskPack833_blurb, DiskPack833_audio, 2.3098, 0.8723, 1.6481, 1.0, 0.00 );
+load_glb_file( webSiteRoot, "a-opt-new-floor.glb", scene, null, null, -0.2012, 0.0000, 3.6620, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-floor-1-sign.glb", scene, Floor_1_Sign_blurb, Floor_1_Sign_audio, 4.4773, 1.6451, -6.3241, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-lp512.glb", scene, lp512_blurb, lp512_audio, 0.6942, 0.5883, 11.1739, 1.0, -180.00 );
+load_glb_file( webSiteRoot, "a-opt-msc7155.glb", scene, msc7155_blurb, msc7155_audio, -2.7617, 0.7769, 1.7394, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-msc7155.glb", scene, msc7155_blurb, msc7155_audio, -2.7617, 0.7769, 0.9256, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-msc7155.glb", scene, msc7155_blurb, msc7155_audio, -2.7617, 0.7769, 0.1171, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-msc7155.glb", scene, msc7155_blurb, msc7155_audio, -2.7617, 0.7769, -0.6960, 1.0, 90.00 );
+load_glb_file( webSiteRoot, "a-opt-mt679.glb", scene, mt679_blurb, mt679_audio, 2.3585, 0.7818, 3.2938, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-mt679.glb", scene, mt679_blurb, mt679_audio, 2.3576, 0.7818, 4.1022, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-mt679.glb", scene, mt679_blurb, mt679_audio, 2.3605, 0.7818, 4.9048, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-mt679.glb", scene, mt679_blurb, mt679_audio, 2.3648, 0.7818, 5.7079, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-mtc7021.glb", scene, mtc7021_blurb, mtc7021_audio, 2.3585, 0.7763, 2.4233, 1.0, -90.00 );
+load_glb_file( webSiteRoot, "a-opt-power-control.glb", scene, PowerControl_blurb, PowerControl_audio, -4.4205, 0.9439, -5.4043, 1.0, 0.00 );
+load_glb_file( webSiteRoot, "o-dennis.glb", scene, rp_dennis_posed_004_30k_blurb, rp_dennis_posed_004_30k_audio, -2.1973, 1.0496, 10.0606, 1.0, 146.32 );
+load_glb_file( webSiteRoot, "o-mei.glb", scene, rp_mei_posed_001_30k_blurb, rp_mei_posed_001_30k_audio, 0.0000, 0.9707, 2.1511, 1.0, 18.25 );
+
+
+          // GUI elements.
+          var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+          var panel = new BABYLON.GUI.StackPanel();
+          panel.paddingTop = "5px";
+          panel.width = "850px";
+          panel.height = "40px";
+          panel.isVertical = false;
+          panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+          panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+          advancedTexture.addControl(panel);
+
+          var checkbox = new BABYLON.GUI.Checkbox();
+          checkbox.width = "20px";
+          checkbox.height = "20px";
+          checkbox.isChecked = false;
+          checkbox.color = "green";
+          checkbox.onIsCheckedChangedObservable.add(function(value) {
+              use_audio = value;
+          });
+          panel.addControl(checkbox);    
+
+          var header = new BABYLON.GUI.TextBlock();
+          header.text = " Use speech";
+          header.width = "120px";
+          header.marginLeft = "5px";
+          header.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+          header.color = "white";
+          panel.addControl(header);
+
+          var checkbox2 = new BABYLON.GUI.Checkbox();
+          checkbox2.width = "20px";
+          checkbox2.height = "20px";
+          checkbox2.isChecked = false;
+          checkbox2.color = "red";
+          checkbox2.onIsCheckedChangedObservable.add(function(value) {
+              use_ana_camera = ! use_ana_camera;
+              if (use_ana_camera) {
+                  scene.activeCamera = ana_camera;
+                  ana_camera.attachControl(canvas, true);
+              }
+              else{
+                  scene.activeCamera = camera;
+                  camera.attachControl(canvas, true);
+              }
+          });
+          panel.addControl(checkbox2);    
+          
+          var header2 = new BABYLON.GUI.TextBlock();
+          header2.text = " Anaglyph camera";
+          header2.width = "180px";
+          header2.marginLeft = "5px";
+          header2.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+          header2.color = "white";
+          panel.addControl(header2); 
+
+          var button = BABYLON.GUI.Button.CreateSimpleButton("but", "Help");
+          button.width = 0.2;
+          button.height = "40px";
+          button.color = "white";
+          button.background = "green";
+          button.onPointerClickObservable.add(function () {
+              toggleModal();
+              document.getElementById("modal-iframe").innerHTML = helpInfo;
+          });
+          panel.addControl(button);
+
+          var button2 = BABYLON.GUI.Button.CreateSimpleButton("but2", "Stop speaking");
+          button2.width = 0.2;
+          button2.height = "40px";
+          button2.color = "white";
+          button2.background = "red";
+          button2.onPointerClickObservable.add(function () {
+              if (playing_sound != null) {
+                  playing_sound.stop();
+              }
+          });
+          panel.addControl(button2);   
+
+          var button3 = BABYLON.GUI.Button.CreateSimpleButton("but3", "Toggle ambient");
+          button3.width = 0.2;
+          button3.height = "40px";
+          button3.color = "white";
+          button3.background = "green";
+          button3.onPointerClickObservable.add(function () {
+              if (playing_ambient){
+                  ambient_sound.pause();
+                  playing_ambient = false;
+              }
+              else {
+                  ambient_sound.play();
+                  playing_ambient = true;
+              } 
+          });
+          panel.addControl(button3);
+
+          // Return the constructed scene.
+          return scene;
+      };
+
+      // Initialise everything: create the render engine, start the render loop, create the scene.
+      window.initFunction = async function() {                 
+          var asyncEngineCreation = async function() {
+              try {
+                  return createDefaultEngine();
+              } catch(e) {
+                  console.log("the available createEngine function failed. Creating the default engine instead");
+                  return createDefaultEngine();
+              }
+          }
+
+          // Create the render engine and start rendering.
+          window.engine = await asyncEngineCreation();
+          if (!engine) throw 'engine should not be null.';
+          startRenderLoop(engine, canvas);
+
+          // Create the scene.
+          window.scene = createScene();
+      };
+
+      // Save the scene in a global variable once it is ready.
+      initFunction().then(() => {sceneToRender = scene                    
+                                });
+
+      // Resize of window handler.
+      window.addEventListener("resize", function () {
+          engine.resize();
+      });
+
+      window.addEventListener("keydown", function (evt) {
+          if (window.scene.activeCamera != null ){
+              tvec = window.scene.activeCamera.getTarget();
+              pvec = window.scene.activeCamera.position;
+              if (evt.keyCode === 85) {  // U up
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(tvec.x, tvec.y+0.1, tvec.z));
+                  window.scene.activeCamera.setPosition(new BABYLON.Vector3(pvec.x, pvec.y+0.1, pvec.z));
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 68) {  // D down
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(tvec.x, tvec.y-0.1, tvec.z));
+                  window.scene.activeCamera.setPosition(new BABYLON.Vector3(pvec.x, pvec.y-0.1, pvec.z));
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 76) {  // L left
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(tvec.x-0.1, tvec.y, tvec.z));
+                  window.scene.activeCamera.setPosition(new BABYLON.Vector3(pvec.x-0.1, pvec.y, pvec.z));
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 82) {  // R right
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(tvec.x+0.1, tvec.y, tvec.z));
+                  window.scene.activeCamera.setPosition(new BABYLON.Vector3(pvec.x+0.1, pvec.y, pvec.z));
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 70) {  // F forward
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(tvec.x, tvec.y, tvec.z+0.1));
+                  window.scene.activeCamera.setPosition(new BABYLON.Vector3(pvec.x, pvec.y, pvec.z+0.1));
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 66) {  // B back
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(tvec.x, tvec.y, tvec.z-0.1));
+                  window.scene.activeCamera.setPosition(new BABYLON.Vector3(pvec.x, pvec.y, pvec.z-0.1));
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 67) {  // C center
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(0.0, 0.0, 7.0));
+                  window.scene.activeCamera.alpha = BABYLON.Tools.ToRadians(90);
+                  window.scene.activeCamera.beta = BABYLON.Tools.ToRadians(65);
+                  window.scene.activeCamera.radius = 10.0
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+              if (evt.keyCode === 71) {  // G God's eye
+                  window.scene.activeCamera.setTarget(new BABYLON.Vector3(0.0, 0.0, 4.0));
+                  window.scene.activeCamera.alpha = BABYLON.Tools.ToRadians(90);
+                  window.scene.activeCamera.beta = BABYLON.Tools.ToRadians(0.5);
+                  window.scene.activeCamera.radius = 30.0
+                  window.scene.activeCamera.getViewMatrix(true);
+              }
+          }
+      });
+    </script>
+</body>
+</html>
+
