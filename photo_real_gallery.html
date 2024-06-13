@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Photo-realistic Renderings of Some CDC Equipment</title>
+
+  </head>
+  
+  <body bgcolor="#DDDDDD" text="#220088" link="#FF0000" vlink="#AA1111">
+    <font face="arial">
+      <font size="3">
+    
+    <h1 style="text-align:center;">Photo-realistic Renderings of Some CDC Equipment</h1>
+    <br>
+    To complement the main, interactive, machine room model rendered by Babylon.js, here are some
+    more photo-realistic renderings of the same models made using Blender's <em>Cycles</em> path tracing
+    renderer. Most of these were rendered as tests while working on the models for the main interactive
+    "exhibit".
+    <p>
+      These have quite a few nice additional features which cannot be replicated in real time rendering,
+      although a complicated technique called texture baking could give more realism to the interactive
+      renders. We haven't got around to that yet, though.
+    <p>
+      There is quite a price to be paid in rendering time for photo-realism. Instead of many frames per second,
+      these renders take several minutes to several hours on the hardware we have available.
+    <p>
+      Much more detailed descriptions of the devices shown can be found in the interactive machine room "exhibit".
+    <p>
+      It is likely more images will be added to this page in the future, so please check back occasionally.
+    <p>
+      Click on any of the links below to open a new browser tab showing an image. Note that many of these images are
+      of necessity quite large, so there may be difficulties with low bandwidth Internet connections.
+      They are between 7 MBytes and 20 MBytes each (not really so big for late 2023).
+
+      <h2>Rooms and Buildings</h2>
+      
+      <ul>
+        <li> <a href="panoview.html" target="_blank" rel="noopener noreferrer">This</a> is another type
+          of "3D" viewing experience: an equirectangular projection view of the entire machine room, with
+          walls, windows and an urban exterior, as delivered via the Photo Sphere Viewer web technology.
+          It is much more limited than the full 3D rendered experience, but it has its advantages!
+        <li> The image used for the Photo Sphere Viewer rendering can be seen
+          <a href="room-1-v2-new-settings-8k-srgb.jpg" target="_blank" rel="noopener noreferrer">here</a>.
+        <li> <a href="Gallery/floor-1-overview-2.png" target="_blank" rel="noopener noreferrer">The first floor of the NCC building</a> with
+          ceilings removed (but the lights are still there -- they are the dark rectangular boxes).
+          The basic floor model is stackable to build up a multi-storey building. Well, almost -- if there was a
+          fire, it would be discovered that the escape ladders don't go anywhere ... a nasty surprise for the occupants! In this view, one
+          of the two machine rooms on the floor is empty. You can walk from one to the other without going through
+          any doors, so it is really only one room.
+        <li> <a href="Gallery/floor-1-overview-3.png" target="_blank" rel="noopener noreferrer">Another view of the first floor</a> with
+          the ceilings removed.
+      </ul>
+
+      <h2>Central Computer Equipment</h2>
+
+      <ul>
+        <li> A rear view of a <a href="Gallery/cyber-865-cpu-ds.png" target="_blank" rel="noopener noreferrer">Cyber 170-865 Central Computer</a>,
+          showing the deadstart switch panel. This machine was introduced in 1982.
+        <li> A front view of a <a href="Gallery/cyber-865-cpu.png" target="_blank" rel="noopener noreferrer">Cyber 170-865 Central Computer</a>,
+          The "10 ton condensing unit" cooling equipment box on the left is not accurate and has been replaced in newer versions of this 3D model.
+        <li> <a href="Gallery/esm-scene.png" target="_blank" rel="noopener noreferrer">Extended Semiconductor Memory cabinet</a>. We have
+          found very little reference material for this and the model is based on a single photograph of the CERN computer center and
+          people's recollections. Details such as the CDC logo and power switch are probably wrong. The dimensions are probably about
+          right.
+      </ul>
+
+      <h2>Consoles</h2>
+
+      <ul>
+        <li> <a href="Gallery/cc545.png" target="_blank" rel="noopener noreferrer">A CC545 Console</a>,
+          as used with Cyber 170 computer systems.
+        <li> <a href="Gallery/dd60a.png" target="_blank" rel="noopener noreferrer">A DD60-A or, maybe, just DD-60 console</a> as used with
+          the original CDC 6000 machines.
+        <li> <a href="Gallery/dd60b.png" target="_blank" rel="noopener noreferrer">A DD60-B console</a> as used with
+          Cyber 70 series machines.
+      </ul>
+
+      <h2>Mass Storage and Networking Equipment</h2>
+
+      <ul>
+        <li> <a href="Gallery/dd844.png" target="_blank" rel="noopener noreferrer">An 844 Disk Storage Unit</a>, which uses Type 883 removable
+          disk packs. These were introduced in around 1973.
+        <li> <a href="Gallery/dd885.png" target="_blank" rel="noopener noreferrer">An 885 Disk Storage Unit</a>, which uses non-removable
+          storage. These were introduced in around 1980, with a capacity equivalent to about 1 GByte. This was very large for that time,
+          and CDC produced a version of these for use with IBM mainframes too.
+        <li> <a href="Gallery/mt679-x4--7021-controller.png" target="_blank" rel="noopener noreferrer">A group of four 679-7
+            Magnetic Tape Transports</a> with a 7021-31 Magnetic Tape Controller.
+        <li> <a href="Gallery/di-and-vt100-front.png" target="_blank" rel="noopener noreferrer">A CDCnet DI and VT-100</a>, in a small
+          generic rack. The DI provided networking facilities for Cyber mainframes from the mid-1980s onwards. Depending on the options
+          fitted, it could connect a Cyber mainframe to Ethernet, or Ethernet to serial terminals or do many other things. This one
+          has an MDI card connecting to a Cyber channel, an serial RS-232 card for terminal attachment and an ESCI card connecting to
+          Ethernet. Having a VT-100 on top of a DI like this is probably not very realistic. Thanks to Gerard van der Grinten for images
+          used to texture the DI model.
+        <li> <a href="Gallery/di-and-vt100-rear.png" target="_blank" rel="noopener noreferrer">Rear view of a CDCnet DI and VT-100</a>. The
+          same devices as the front view, but showing the DI interface cards. Note the magically levitating keyboard cable (not available
+          in the real world).
+      </ul>
+
+      <h2>Unit Record Equipment</h2>
+
+      <ul>
+        <li> <a href="Gallery/cp415-controller.png" target="_blank" rel="noopener noreferrer">A 415 Card Punch</a>,
+          with its 3446 controller in a Type B peripheral controller cabinet. These devices date back to around 1963,
+          and were originally used with the CDC 3000 series machines.
+        <li> <a href="Gallery/lp512.png" target="_blank" rel="noopener noreferrer">A 512 Chain Printer</a>. This device was also
+          originally intended for use with CDC 3000 series machines and dates from the early 1960s (perhaps 1963).
+          It was obsolescent by the late 1970s when CDC offered the 580 printer.
+        <li> <a href="Gallery/cr405-gallery.png" target="_blank" rel="noopener noreferrer">A 405 Card Reader</a>. Again,
+          originally intended for use with CDC 3000 series machines and from around 1963. It seems generally agreed that this was
+          one of the best (most reliable and fastest) card readers ever produced.
+      </ul>
+      
+  </body>
+</html>
