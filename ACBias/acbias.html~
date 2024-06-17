@@ -1,0 +1,680 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>How AC Bias Really Works ... Maybe ...</title>
+</head>
+
+<body bgcolor="#DDDDDD" text="#220088" link="#FF0000" vlink="#AA1111">
+<font face="arial">
+<font size="5">
+<center>
+
+<b>
+How AC Bias Really Works ... Maybe ...
+</b>
+
+</center>
+<font face="arial">
+<font size="3">
+
+<h3>What is bias anyway? And why do we need it?</h3>
+
+All magnetic recording is based on ferromagnetic materials becoming permanently magnetized
+by an applied external magnetic field (perhaps due to an electrical signal in a coil of 
+wire). 
+These materials "remember" the magnetic field
+that was applied to them in the past, and if they are later moved across something
+that can sense magnetic fields (such as a coil of wire), their magnetic history
+can be reproduced in the present (perhaps as an electrical signal). 
+<BR><BR>
+Very few materials are ferromagnetic. Permanent
+magnetism is due to the alignment of electron spins in
+materials where those spins do not naturally cancel out. "Bulk" samples of ferromagnetic
+material (e.g. steel wire) naturally organize themselves in to regions of consistent
+electron spin alignment known as "domains". This tendency for large numbers of 
+electrons to align in the same way, but only over a limited volume, is brought about
+by a thing called the "quantum mechanical exchange force" acting to minimize the
+overall energy stored in the magnetic fields. A localized external magnetic field can change
+the alignment of a small region of the material independent of neighbouring regions.
+<BR><BR>
+The first person to realize the potential of ferromagnetism for recording sound
+was either Oberlin Smith in the U.S. or Wilhelm Hedic in the Netherlands both 
+in 1887/88. In Smith's case, his patent application was refused because it was
+against all the known laws of magnetism! At that time, it was thought that magnetism
+would spread throughout a material (like ink in water) until one end was a south pole
+and the other north, with no possibility of localized regions retaining different levels
+or directions of magnetization. 
+<BR><BR>
+In 1894 Valdemar Poulsen demonstrated beyond
+doubt that localized magnetization in steel wires existed and could be used to
+record and reproduce electrical signals. This was regarded as quite miraculous at the time,
+and was indeed revolutionary. Its importance in the history of technology
+can hardly be overstated, and magnetic recording remains hugely important today. 
+Although tape may be close to dead now, magnetic disks
+certainly are not. Their replacement by flash memory may be underway, but it will not
+be complete for quite some time (probably not until the next decade I suspect - it is
+mid 2012 at the time of writing).
+<BR><BR>
+The good thing about ferromagnetism is that it is a robust way of recording electrical
+signals, potentially at very high information densities. As far as faithfully
+recording and reproducing an <b>analog signal</b> goes, however, it leaves <b>a lot</b> to be
+desired! The problem is that the magnetization retained by the material has a highly
+non-linear relationship to the applied magnetizing field. Beyond simple non-linearity,
+the magnetization an external field causes depends greatly on the previous magnetization
+of the material. If you slowly increase the external field, then start to decrease it,
+the resulting magnetization for a given field strength on the way down is <b>not</b> the
+same as it was on the way up! This is known as <b>hysteresis</b> and is a fundamental
+property of ferromagnetic materials due to the way domains organize themselves under
+the control of the exchange force.
+<BR><BR>
+Magnetism in ferromagnetic materials is complicated. Many of the descriptions that follow
+are simplified out of necessity (and my ignorance). For practical applications,
+what we are interested in is the relationship between the <b>applied external field</b>,
+which we will denote by <B>H</B> and the permanent or <B>remanent magnetization</B> left
+in the material as a result of that field, which we will denote by <B>B</B>. We will call
+this relationship the <B>tape transfer characteristic</B> although "tape" might be 
+steel wire in much of what follows. We want the transfer characteristic to be <B>linear</B>,
+but it is naturally anything but. <B>Bias schemes</B> are all attempts to linearize it.
+
+<P>
+<center>
+<img src="nobias.png" width=600>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+
+The diagram above shows a typical tape transfer characteristic. Note that this
+ignores hysteresis, and is only valid if the magnetic material starts in
+a state of zero net magnetization. We will almost always assume that we start
+off in this demagnetized state in what follows, and generally ignore hysteresis.
+<BR><BR>
+As we can see, there is a dirty great "dead band"
+in the middle for low applied fields, followed by a fairly (but not very)
+"linear region", then a "saturation region" where the magnetization "maxes out" regardless
+of how strong the applied field gets. If the applied field, <B>H</B>, is a sine wave, the
+resulting magnetization, <B>B</B>, shows terrible "crossover" distortion. This would be
+hideous if used to record sound signals. This is the state of things
+in Poulsen's original experiments and, probably, his 1894/98 apparatus.
+It could be used to demonstrate that magnetic
+recording worked, and could maybe be useful for recording Morse code ... but that is 
+all.
+<BR><BR>
+The obvious thing to do is to move the <B>H</B>
+signal to the linear region by adding a constant
+DC current to the coil generating the field.
+
+<P>
+<center>
+<img src="simple-dcbias.png" width=600>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+
+The diagram above shows this scheme. This was almost certainly introduced in Poulsens's
+machines as the 19th century turned in to the 20th. This makes the <B>B</B>
+ signal a more
+faithful representation of the <B>H</B> input. However, only a small region of the transfer
+characteristic can be used: <B>H</B> must be small and this worsens the noise performance.
+Just having a DC <B>H</B> will add noise because the net magnetization is not zero (I
+don't fully understand that, though).
+So this is still pretty bad. Magnetic recording would still sound pretty terrible -
+and terribly faint - at the period
+this was introduced, especially since there was no electronic amplification available at that
+time to make the signal louder.
+<BR><BR>
+Poulsen and his engineer, Pederson, had another version of DC bias up their sleeve,
+though. This was introduced in 1905 to 1907.
+
+<P>
+<center>
+<img src="dcbias.png">
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+
+This explicitly uses hysteresis to get a somewhat better result and is a clever improvement
+on the "simple DC bias" scheme. Noise remains a major problem though, and distortion
+is still bad ... perhaps 10%. Even with careful development, magnetic recording
+remained inferior to what could be achieved with disc cutting recording ... until AC
+bias finally came to the rescue!  Probably the best that was achieved with DC bias
+was something like a 70Hz to 7kHz useful bandwidth with 40 to 45dB signal-to-noise
+ratio. Remarkably, DC bias was used in dictating machines well in to the 1970's.
+
+<h3>AC bias to the rescue ...</h3>
+AC bias has a strange history. The basic physics underlying the process
+(anhysteretic magnetization) was explored by Steinhaus and Gumlich in Germany in
+1915. AC bias for magnetic recording was then independently discovered at least three times.
+<BR><BR>
+The first time was in 1921 by Carpenter and Carlson of the 
+U.S. Naval Research labs when they were
+experimenting with Poulsen "Telegraphon" machines. These were found to have
+been used in a First World War German espionage scheme to transmit Morse code at
+very high speeds, which brought them to the attention of the U.S. Navy.
+AC bias was discovered a second time by Nagai, Sasaki and Endo in Japan around 1938.
+Neither of these groups seemed to see its potential though. Finally, in 1940,
+von Braunmuehl and
+Weber of the German RRG broadcasting service discovered it again (accidentally!) <B>and
+understood what could be done with it</B> - a massive improvement in performance.
+<BR><BR>
+The basic scheme is to generate an AC signal at 5 or more times the maximum frequency that
+is to be recorded (e.g. 100kHz for the 20kHz audio range) and perhaps 10 times the
+strength of the signal to be recorded. The audio signal is then simply <i>added</i> to
+the bias signal. This is not amplitude modulation, but simple superposition. 
+
+<P>
+<center>
+<img src="acbias_diag1.png">
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+
+The standard explanation for how AC bias works is shown in the diagram above.
+The bias plus the signal, <B>H</B>, is recorded on the tape with the resulting peaks and 
+troughs in the linear regions of the transfer characteristic. The replay head
+averages the resulting <B>B</B> field over an area on the tape considerably bigger than
+the bias wavelength. The result is a clean, linear reproduction of the original
+signal, with a substantially flat frequency response quite possible over the
+full audio range and a signal to noise ratio better than 70dB. This is such
+an improvement over DC bias that it revolutionized magnetic recording. It was
+now clearly superior to disc cutting - although as we know it actually transformed
+the recording process for vinyl discs rather than replacing the discs themselves.
+<BR><BR>
+So that is that! Except ... There are quite a few deficiencies with this explanation
+of how AC bias works:
+<ul>
+<li>The bias signal is not recorded faithfully on the tape as shown in the diagram.
+It is often recoverable from the tape with suitable heads (capable of reproducing
+its short wavelength), but those clean full amplitude transitions are not
+recorded. <B>So the averaging process as shown will not work.</B> So why
+does AC bias succeed in dramatically reducing distortion?
+<li>The sensitivity of the tape (i.e. the <B>B</B> that results from a given
+<B>H</B>) increases with the strength of the bias field up to a point and then declines.
+Why?
+<li>The frequency response of tape changes dramatically with the strength of the
+bias field. At low bias strengths, the HF response is greatly exaggerated and declines
+as the bias field increases. Why?
+</ul>
+<BR>
+All the graphs above showing <B>B</B> plotted against <B>H</B> are based on
+measurements of large samples of material. To try to answer our outstanding
+questions, we need to look at the microscopic structure of tape and what happens
+at that level when we magnetize it and subsequently convert its remanent magnetic
+field to an electrical signal.
+
+<h3>Towards a real understanding of AC bias</h3>
+A nice explanation for what is going on with AC bias recording
+is found in this paper:
+<BR><BR>
+<I>Magnetic Characteristics of Recording Tapes and the Mechanism of the 
+Recording Process</I><BR>
+J. G. Woodward and E. Della Torre<BR>
+11th Annual Meeting of the Audio Engineering Society<BR>
+October 5th - 9th 1959
+<BR><BR>
+and a follow up to that:
+<BR><BR>
+<I>Particle Interaction in Magnetic Recording Tapes</I><BR>
+J. G. Woodward and E. Della Torre<BR>
+J. App. Physics, <B>31</B>, 1, 1960
+<BR><BR>
+This work really starts to get to the heart of the matter. Unfortunately, neither
+paper is freely available, but the AES one is well worth the $20 it costs to 
+access it. What follows was inspired by these papers.
+<BR><BR>
+To understand how AC bias really works, we need to look at what tape is actually made of.
+We have a very large number of very small particles, often of gamma ferric oxide.
+These particles are cigar shaped - long and relatively thin - and typically they are
+around 0.5um in length and 0.1um in diameter. They are embedded in a non-magnetic,
+plastic binder. They are closely packed (about 50% of the volume is occupied by the
+particles) but separate. The particles are "lined up" when the tape is made so that
+their long axis lies in the direction of the length of the tape within around
++/- 30 degrees. There will be a distribution of particle sizes: some will be smaller
+than average and some bigger.
+<BR><BR>
+Each of these particles 
+behaves as a single magnetic domain. Each, in practice, can be magnetized in only
+one of two ways: North-South or South-North. That is, either there is a North pole at
+one of the sharp ends and a South pole at the other, or vice versa. Lets call this 
+magnetic orientation the <i>magnetic polarity</i> of the particle, or 
+<B>m</B> ... with a value of either +1 (say for N-S) or -1 (S-N).
+
+<HR>
+<P>
+<center>
+<img src="magpart.png">
+</center>
+</P>
+<HR>
+<BR CLEAR=ALL>
+<BR>
+
+The strength of the magnetic field of each particle is:
+<BR><BR>
+<center>
+<img src="eqn_j10.png" width=50>
+</center>
+<BR>
+where <B>c</B> is the "size" (which we will take to be the length) of the particle.
+<BR><BR>
+Suppose there is an external field, <B>H</B>, which can be represented as a vector in the X
+direction. We'll use <B>H</B> to denote the strength of this field. 
+<B>H</B> may be positive or negative.
+Let's think about a short piece of tape, with its long dimension also
+in the X direction, exposed to <B>H</B>. Here is a drawing of this 
+highly idealized and 2 dimensional piece of tape:
+<BR><BR>
+<HR>
+<center>
+<img src="tapesegment.png">
+</center>
+<HR>
+<BR>
+Suppose we can also measure the magnetization, 
+<B>B</B>,
+of this short piece of tape, making the measurement along the X direction. With this
+arrangement, we only need to worry about the X component of the various vectors that
+are involved in most cases.
+<BR><BR>
+<center>
+<img src="eqn_j12.png" width=250>
+</center>
+<BR>
+That is, the magnetization we measure for our small region of tape is just the
+sum of the magnetic fields of the particles acting in the direction we are measuring.
+This is the "replay head" integrating the magnetic field it "sees" in a real system.
+There the details are more complicated, but the overall principle is the same.
+<BR><BR>
+The <B>erased state</B> of the tape is one in which there is a completely random
+assignment of magnetic polarities to particles, with equal numbers of <B>m</B>=+1
+and <B>m</B>=-1 states which will sum up to a measured <B>B</B> of close to zero.
+The actual <B>B</B> will fluctuate about zero for different tape segments and the
+granular magnetic structure of the tape is what is responsible for the noise of
+erased tape.
+<BR><BR>
+For each particle, there will be a value of <B>H</B> which will switch it from N-S
+(<B>m</B>=+1) to
+S-N (<B>m</B>=-1) magnetic polarity. 
+<BR><BR>
+Considered individually, with its long axis 
+in the direction of <B>H</B>, every particle will have a
+<B>symmetric hysteresis curve</B>. If <B>H</B>=0.6 switches it from <B>m</B>=-1 to
+ <B>m</B>=+1, then <B>H</B>=-0.6 will
+switch it from <B>m</B>=+1 to <B>m</B>=-1. 
+The value of <B>H</B> that does this switching we will assume is
+dependent only on the size of the particle, <B>c</B>. 
+<BR><BR>
+The actual
+<B>H</B> value
+that will switch the polarity of a given single particle <B>in the binder</B>
+from +1 to -1 or
+vice versa will also depend on the particle's geometric orientation <B>O</B>.
+The switching values
+of <B>H</B> will still be symmetric for each particle though.
+<BR><BR>
+A given particle will be switched when <B>H</B> "overcomes" the magnetic field of the
+particle itself. This field has a strength <B>m c</B> and is oriented along 
+<B>O</B>. The polarity
+<B>m</B> will switch to the polarity of <B>H</B>
+ when the magnitude of the component of <B>H</B> acting in the direction
+of <B>O</B> equals or exceeds <B>| m c |</B>.
+<BR><BR>
+<center>
+<img src="eqn_J11.png" width=200>
+</center>
+<BR>
+If we plot the <B>H</B> that switches a particle to <B>m</B> = +1, <B>H+</B>, 
+against the <B>H</B> that switches it
+to <B>m</B> = -1, <B>H-</B>, we get what is called a <B><i>Preisach diagram</i></B>. 
+(Actually, it seems that <B>H+</B> is always plotted against <B>- H-</B>, so the plot lies 
+predominantly in the
+first quadrant. This is a little confusing, but we follow this convention here).
+<BR><BR>
+From what we have said so
+far, we would expect all the points on such a plot to lie on the X=Y line.
+<BR><BR>
+For a given particle, <B>i</B>, we would expect:
+<BR><BR>
+<center>
+<img src="eqnbias_2.png" width=200>
+</center>
+<BR>
+where <B>o_i_x</B>
+is the x component of the <B>O</B> orientation unit vector 
+(along the long axis of the particle),
+and <B>c_i</B> is its size.
+<BR><BR>
+Let's look at the Preisach diagram for this case and see what it implies if we
+operate without AC bias.
+<BR><BR>
+<HR>
+<center>
+<img src="preisachs.png" width=800>
+</center>
+<HR>
+<BR>
+We can see how our microscopic picture of what is happening in the tape corresponds
+to its macroscopic measured transfer characteristic.
+<BR><BR>
+What happens with AC bias? In this, the signal, Hs, is added to a much stronger bias,
+Hb, and the two decay away together to zero as the tape element moves away
+from the record head. This leads to a very unfortunate result:
+<BR><BR>
+<HR>
+<center>
+<img src="acbias_preisachs.png" width=800>
+</center>
+<HR>
+<BR>
+AC bias just does not work! The predicted B versus H curve switches from saturated -B
+to saturated +B as H goes though zero! This is obviously wrong.
+<BR><BR>
+<HR>
+<center>
+<img src="false_acbia_transfer.png">
+</center>
+<HR>
+<BR>
+It is possible to plot a Preisach diagram for a <B>real tape</B> and 
+<B>fortunately</B> it turns out that
+all the points <b>do not</b> lie on the X=Y line. This is what Woodward and Della Torre did.
+Instead, there is a cloud of points
+distributed symmetrically about that line (as if reflected in the X=Y line).
+<BR><BR>
+The reason for this is that the particles, being magnetized one way or the other,
+generate a magnetic field of their own, which I'll call the <i>ambient field</i>.
+The switching points of a given particle are now shifted away from symmetry by the
+strength and direction of the ambient field at the position of that particle. Taking this
+in to account:
+<BR><BR>
+<center>
+<img src="eqnbias_3.png" width=250>
+</center>
+<BR>
+where <B>a_i_x</B> is the x component of the ambient field.
+<BR><BR>
+For a given arrangement of <B>n</B> particles, with each particle
+located at <B>p_j</B>, with a polarity <B>m_j</B>, 
+orientation <B>o_j</B> and size <B>c_j</B>, the ambient field
+experienced by the <B>i</B>-th particle, <B>a_i</B>, at its position, 
+<B>p_i</B> will be:
+<BR><BR>
+<center>
+<img src="eqnbias_1.png" width=250>
+</center>
+<BR>
+<BR>
+This ambient field shifts the switching points of each individual particle.
+They no longer switch <B>-ve</B> at the same <B>H-</B> as the
+<B>H+</B> for which they switch 
+<B>+ve</B>.  The particle population is no longer confined to the 
+<B>H+=H-</B> line. It spreads out along the <B>Hs</B> direction. The exact
+shape of the distribution depends on the details of how close the particles
+are, how much they tend to clump together, the size distribution and so
+forth. The shape is critical in determining the performance characteristics of
+the tape.
+<BR><BR>
+<HR>
+<center>
+<img src="magpart_assym.png" width=600>
+</center>
+<HR>
+<BR>
+The outcome of this is that half cycles of the combined <B>Hs+Hb</B> field switch the
+particle population first positive and then negative, with fewer and fewer of them
+being switched as <B>Hs+Hb</B> declines to zero. The population ends up divided
+in to two groups: <B>+ve</B> and <B>-ve</B>. If Hs is 0, the population
+is evenly divided down the <B>H+=H-</B> line. If <B>Hs</B> is <B>> 0</B>,
+however, more end up <B>+ve</B> than <B>-ve</B>, and vice versa if
+<B>Hs < 0</B>.
+<BR><BR>
+<HR>
+<center>
+<img src="acbias_preisachs_interact.png" width=800>
+</center>
+<HR>
+<BR>
+The relationship between <B>Hs</B> and the net remanent magnetization ends up
+being very nearly linear over a good range of <B>Hs</B>. This is <B>exactly what
+is wanted</B> of course! 
+<BR><BR>
+Note that this linearity (and the magnitude of the
+reproduced signal) is <B>dependent on the difference between the number of particles
+switched +ve and the number switched -ve in the region sensed
+by the reproduce head</B>. Analog magnetic recording with AC bias is very much a 
+discrete process at its heart.
+
+<h3>Simulating the AC bias process in software</h3>
+Now, it seems that we might be able to do a <B>direct, naive, simulation</B> of such
+a system of particles and see what happens ... This is what the program <B>magsimo.c</B>
+does in 2D in a very straightforward (simple minded, even) way. 
+<BR><BR>
+We start with a grid of 150 x 150 particles. These are arranged on a regular grid
+then "jittered" so their positions are somewhat random. They are assigned a random
+orientation vector within +/- 30 degrees of horizontal. They each also get a random
+size and a random initial magnetic polarity. The assembly as a whole
+has (approximately) zero net magnetization. From this we can calculate the 
+ambient field, an example of which is shown below.
+<P>
+<center>
+<img src="ambfield.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+Given the ambient field, we can then find the <B>H+</B> and <B>H-</B> for every particle. An
+example of that is shown below.
+<P>
+<center>
+<img src="switch_minus.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+<P>
+<center>
+<img src="switch_plus.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+Now we have that information, we are in a position to plot a Preisach diagram for our
+simulated tape. This is, as expected, a fair approximation to a distribution centered
+on the X=Y line and roughly symmetric in reflection about that line.
+<P>
+<center>
+<img src="preisach_diag.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+If we count the number of particles per unit area on the Preisach diagram, we get what
+is known as the J function. We won't actually make much use of this here, but it tells
+you how many particles will switch at a particular pair of <B>H+,H-</B> values: 
+<B>J(H+,H-)</B>. We
+don't have very many particles in our simulation, so it is a bit bumpy, but this is
+what can actually be measured for a real tape - where there are so many particles
+involved that the function will be smooth.
+<P>
+<center>
+<img src="jfunc.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+With AC bias, the <B>H</B> field at the recording head which is the sum of the bias, 
+<B>Hb</B>, and
+signal, <B>Hs</B>, is very strong and switches between <B>H+</B> = 1 and 
+<B>H-</B> = 1. An element of
+tape (which we are simulating here) will have all its particles switched to <B>m</B>=+1,
+then to <B>m</B>=-1. That is, the positive and negative excursions of <b>H</b> 
+cover the whole
+Preisach diagram.
+<BR><BR>
+As the element moves away from the recording head, the <b>H</b> field declines to zero -
+both <b>Hb</b> and <b>Hs</b> die away together. 
+First the <b>H+</b>, then <b>H-</b> field "sweep" a progressively
+smaller region of the Preisach diagram. If there is no signal, the sweep is
+symmetrical and in the end, equal numbers of particles are switched positive as
+are switched negative. This is shown in the animation on the left below.
+<P>
+<img src="acbias_sig00_small.gif" align=left>
+<img src="acbias_sig01_small.gif" align=right>
+</P>
+<BR CLEAR=ALL>
+The end result is a stepped approximation to the X=Y line on the Preisach diagram
+or J function. This line separates the particles that end up
+positive from those that end up negative and results in a net magnetization, M, of zero.
+<BR><BR>
+But if the signal is greater than zero, the <b>H</b> field sweeps fewer
+particles negative than it sweeps positive, resulting in a positive net magnetization.
+There is now a stepped approximation to a line of slope:
+<BR><BR>
+<center>
+<img src="eqnbias_4.png" width=250>
+</center>
+<BR>
+on the Preisach diagram separating the particles that end up positive from those
+that end up negative.
+<BR><BR>
+The animations above show the AC bias process taking place in the Preisach diagram
+as the total field <b>H</b> decays away for the case of <b>Hs</b> = 0.0 and 
+<b>Hs</b> = 0.1. 
+<BR><BR>
+So, if we are successfully simulating the AC bias process, the net magnetization
+should be linear over some range of <b>Hs</b>. 
+<BR><BR>
+Let's first look at what the simulation
+predicts with zero bias.
+<P>
+<center>
+<img src="anhist.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+Well, that looks pretty much as we would expect! What happens with "full" AC bias?
+<P>
+<center>
+<img src="acbias.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<BR>
+That looks very nice ... pretty much exactly what we would hope to see for AC
+bias, with a good linear section and considerably greater sensitivity (maximum
+slope of the transfer characteristic) than without AC bias.
+<BR><BR>
+Let's push our luck a bit further and see what happens as we change <b>Hb</b>,
+increasing from zero. Ideally,
+we would see distortion fall and sensitivity increase to a peak, then the sensitivity
+should start to fall and distortion reduce further.
+<P>
+<center>
+<img src="acbias_range.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<P>
+<center>
+<img src="acbias_range_central.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<P>
+<center>
+<img src="acbias_surface2.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+<P>
+<center>
+<img src="bias_sensitivity.png" width=800>
+</center>
+</P>
+<BR CLEAR=ALL>
+For such a simple minded simulation, that is very satisfactory. This is much more
+like how AC bias recording really works!
+
+<HR>
+<h3>However ...</h3>
+This is pretty much as far as I have been able to take the reproduction of AC bias
+behaviour with this simple simulation. We have succeeded in reproducing two of the
+effects not fully explained by the "simple explanation" given in the
+ <B>AC bias to the rescue ...</B> section. 
+<ul>
+<li>How AC bias dramatically reduces distortion even though the bias waveform is
+not faithfully recorded.
+<li>How the sensitivity of the tape increases with the strength of the bias 
+field up to a point and then declines.
+</ul>
+I can't actually think of a good way of making the simulation reproduce the third
+effect of AC bias:
+<ul>
+<li>The frequency response of tape changes dramatically with the strength of the
+bias field. At low bias strengths, the HF response is greatly exaggerated and declines
+as the bias field increases.
+</ul>
+Woodward and Della Torre did manage to do this using an analysis of the J-functions they
+measured for two real tapes, but I can't really see how to generalize that and
+implement it in software.
+<BR><BR>
+Furthermore ... there is actually a problem with the Woodward and Della Torre model which was noted
+by the J. App. Physics reviewers. As the external field "flips" the magnetization of
+particles the ambient field (which affects when particles "flip") will change. This means
+that it isn't possible to assign a fixed negative and positive switching field value to
+each particle in the way that magsimo (and, effectively,
+ Woodward and Della Torre's paper) does. In fact,
+magsimo originally tried to iterate until it found a stable ambient field ... but unless the
+particles were spaced far apart (or an equivalent) the ambient field <I>never stabilized</I>.
+Particles got in to stable patterns of oscillation, much like cells in Conway's Game of Life.
+The argument was that, at least for real tapes, the whole system was <I>statistically stable</I>
+and behaved <I>as if</I> you could assign  fixed switching fields to individual particles, even
+though you can't do that. I'm not sure if this issue was ever resolved, although real tape
+does behave as if that assertion were true. Sort of.
+<BR><BR>
+In the 1970's there were many numerical simulations of magnetic 
+recording processes, including
+AC bias, and some of them became very complex. Just how accurate and useful they were
+seems to be in some doubt (judging by comments on "self-consistent models" in Chapter 6
+of "The Foundations of Magnetic Recording" by John C. Mallinson).
+<BR><BR>
+Other models of the recording process include the Bauer-Mee Bubble Model which
+is concerned with how magnetisation takes place through the thickness of the tape.
+There is a very interesting thesis by W. J. W. Kitzen from 1978 which applies the
+Neel and Stoner-Wohlfarth fundamental physical theories of magnetization to magnetic
+tape and develops sophisticated simulation software based on them. This is available 
+<a href="http://alexandria.tue.nl/extra1/afstversl/E/338964.pdf">here</a>.
+<BR><BR>
+<B>Well, all this is just ancient history now</B>. 
+But it really is very complicated indeed.
+Maybe one advantage of digital audio is that it is so much simpler! Only joking ... Or am I?
+<BR><BR>
+<HR>
+You can download magsimo.c <a href="magsimo.c">here</a>. I can't really think of a 
+good reason to get it, but you never know!
+<HR>
+NOTE: All software on this site is licensed under the 
+<a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a>. This is only
+to formally state that there is no warranty and I am in no way liable for your use
+of the software. You are free to modify it and use it in any way you like with the sole
+exceptions of changing the license terms or removing the copyright notice. The MIT
+License seems to be the most permissive there is, which is my intention.
+I would prefer not to use any license, but I am told that might be unwise these days.
+<BR>
+<HR>
+You will need a working C/C++ software development environment to use magsimo.c. I 
+recommend Python with the Python imaging library
+to convert raw images from magsimo to something viewable, and
+Gnuplot to plot graphs from the simulated data. A Python program to help
+convert raw images to JPEG format is available <a href="raw2jpeg.py">here</a>.
+<HR>
+<BR><BR>
+<a href="index.html">Go home ...</a>
+</font>
+</body>
+</html>
